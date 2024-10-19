@@ -1,3 +1,5 @@
+#define MAX_BUFFER_SIZE 128
+
 int strcmp(const char *str1, const char *str2)
 {
     if(!str1 || !str2)
@@ -57,5 +59,42 @@ void strset(char *dest, int val, int size)
         *cur = val;
         cur++;
         size--;
+    }
+}
+
+void itoa(int x, char *str)
+{
+    if(x == 0)
+    {
+        str[0] = 0 + '0';
+        str[1] = '\0';
+        return ;
+    }
+    int flag = (x > 0) ? 1 : -1;
+    int i = 0;
+    x = (x > 0) ? x : -x;
+    while(x > 0)
+    {
+        str[i] = (x % 10) + '0';
+        x /= 10;
+        i++;
+    }
+    if(flag == - 1)
+    {
+        str[i] == '-';
+        i++;
+    }
+    str[i] = '\0';
+    reversestr(str);
+}
+
+void reversestr(char *str)
+{
+    int size = strlen(str);
+    for(int i = 0; i < (size + 1) / 2; i++)
+    {
+        char tmp = str[i];
+        str[i] = str[size - i - 1];
+        str[size - i - 1] = tmp;
     }
 }

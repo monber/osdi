@@ -1,5 +1,6 @@
 #include "uart.h"
 #include "string.h"
+#include "mbox.h"
 
 int main()
 {
@@ -7,7 +8,7 @@ int main()
 
     while(1)
     {
-        //uart_puts("Hello World");
+        //
         char buffer[MAX_BUFFER_SIZE];
         strset(buffer, 0, MAX_BUFFER_SIZE);
         uart_gets(buffer);
@@ -20,6 +21,11 @@ int main()
         else if(strcmp(buffer, "hello\n") == 0)
         {
             uart_puts("Hello World\n");
+        }
+        else if(strcmp(buffer, "print gpu info\n") == 0)
+        {
+            mbox_print_board_revision();
+            mbox_print_arm_memory_info();
         }
         else if(strcmp(buffer, "reboot\n") == 0)
         {

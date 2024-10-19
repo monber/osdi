@@ -124,7 +124,6 @@ void uart_gets(char *s)
     }
 }
 
-
 /**
  * Display a string
  */
