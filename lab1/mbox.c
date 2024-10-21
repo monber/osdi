@@ -87,7 +87,7 @@ void mbox_print_board_revision()
     //To Do:int2string
     char str[MAX_BUFFER_SIZE];
     strset(str, 0, MAX_BUFFER_SIZE);
-    itoa(mbox[5], str);
+    int2hex(mbox[5], str);
     uart_puts("board revision: ");
     uart_puts(str);
     uart_puts("\n");
@@ -113,12 +113,12 @@ void mbox_print_arm_memory_info()
     char str[MAX_BUFFER_SIZE];
     uart_puts("base address: ");
     strset(str, 0, MAX_BUFFER_SIZE);
-    itoa(mbox[5], str);
+    int2hex(mbox[5], str);
     uart_puts(str);
     uart_puts("\n");
     uart_puts("size: ");
     strset(str, 0, MAX_BUFFER_SIZE);
-    itoa(mbox[6], str);
+    int2hex(mbox[6], str);
     uart_puts(str);
     uart_puts("\n");
     //printf("0x%x\n", mbox[5]); // it should be 0xa020d3 for rpi3 b+

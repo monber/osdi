@@ -22,23 +22,7 @@
  * DEALINGS IN THE SOFTWARE.
  *
  */
-
-#include "gpio.h"
-
-/* Auxilary mini UART registers */
-#define AUX_ENABLE      ((volatile unsigned int*)(MMIO_BASE+0x00215004))
-#define AUX_MU_IO       ((volatile unsigned int*)(MMIO_BASE+0x00215040))
-#define AUX_MU_IER      ((volatile unsigned int*)(MMIO_BASE+0x00215044))
-#define AUX_MU_IIR      ((volatile unsigned int*)(MMIO_BASE+0x00215048))
-#define AUX_MU_LCR      ((volatile unsigned int*)(MMIO_BASE+0x0021504C))
-#define AUX_MU_MCR      ((volatile unsigned int*)(MMIO_BASE+0x00215050))
-#define AUX_MU_LSR      ((volatile unsigned int*)(MMIO_BASE+0x00215054))
-#define AUX_MU_MSR      ((volatile unsigned int*)(MMIO_BASE+0x00215058))
-#define AUX_MU_SCRATCH  ((volatile unsigned int*)(MMIO_BASE+0x0021505C))
-#define AUX_MU_CNTL     ((volatile unsigned int*)(MMIO_BASE+0x00215060))
-#define AUX_MU_STAT     ((volatile unsigned int*)(MMIO_BASE+0x00215064))
-#define AUX_MU_BAUD     ((volatile unsigned int*)(MMIO_BASE+0x00215068))
-
+#include "uart.h"
 /**
  * Set baud rate and characteristics (115200 8N1) and map to GPIO
  */
@@ -86,7 +70,7 @@ void uart_send(unsigned int c) {
         asm volatile("nop");
     }while(!(*AUX_MU_LSR & 0x20));
     /* write the character to the buffer */
-    *AUX_MU_IO=c;
+    *AUX_MU_IO = c;
 }
 
 /**
@@ -101,27 +85,8 @@ char uart_getc() {
     }while(!(*AUX_MU_LSR & 0x01));
     /* read it and return */
     r=(char)(*AUX_MU_IO);
-    //uart_send(r);
     /* convert carriage return to newline */
     return r == '\r' ? '\n' : r;
-}
-
-/**
- * Recevie a character
- */
-void uart_gets(char *s)
-{
-    char *curs = s;
-    while(1)
-    {
-        char c = uart_getc();
-        *curs = c;
-        if(c == '\n')
-        {
-            break;
-        }
-        curs++;
-    }
 }
 
 /**
@@ -130,8 +95,8 @@ void uart_gets(char *s)
 void uart_puts(char *s) {
     while(*s) {
         /* convert newline to carriage return + newline */
-        if(*s=='\n')
-            uart_send('\r');
+        //if(*s=='\n')
+        //    uart_send('\r');
         uart_send(*s++);
     }
 }

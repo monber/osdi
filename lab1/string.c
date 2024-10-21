@@ -1,4 +1,4 @@
-#define MAX_BUFFER_SIZE 128
+#include "string.h"
 
 int strcmp(const char *str1, const char *str2)
 {
@@ -16,7 +16,7 @@ int strcmp(const char *str1, const char *str2)
         c2 = (unsigned char)*s2;
         s1++;
         s2++;
-        if(c1 == '\n')
+        if(c1 == '\0')
         {
             return c1 - c2;
         }
@@ -62,32 +62,6 @@ void strset(char *dest, int val, int size)
     }
 }
 
-void itoa(int x, char *str)
-{
-    if(x == 0)
-    {
-        str[0] = 0 + '0';
-        str[1] = '\0';
-        return ;
-    }
-    int flag = (x > 0) ? 1 : -1;
-    int i = 0;
-    x = (x > 0) ? x : -x;
-    while(x > 0)
-    {
-        str[i] = (x % 10) + '0';
-        x /= 10;
-        i++;
-    }
-    if(flag == - 1)
-    {
-        str[i] == '-';
-        i++;
-    }
-    str[i] = '\0';
-    reversestr(str);
-}
-
 void reversestr(char *str)
 {
     int size = strlen(str);
@@ -97,4 +71,42 @@ void reversestr(char *str)
         str[i] = str[size - i - 1];
         str[size - i - 1] = tmp;
     }
+}
+
+void itoa(int x, char *str)
+{
+    int flag = (x >= 0) ? 1 : -1;
+    int i = 0;
+    x = (x > 0) ? x : -x;
+    do
+    {
+        str[i] = (x % 10) + '0';
+        x /= 10;
+        i++;
+    }while(x > 0);
+    if(flag == - 1)
+    {
+        str[i] = '-';
+        i++;
+    }
+    str[i] = '\0';
+    reversestr(str);
+}
+
+void int2hex(int x, char *str)
+{
+    unsigned int val = (unsigned int)x;
+    char map[6] = {'a', 'b', 'c', 'd', 'e', 'f'};
+    int i = 0;
+    do
+    {
+        int mod = val % 16;
+        str[i] = (mod >= 10) ? map[mod - 10] : mod + '0';
+        val /= 16;
+        i++;
+    }while(val > 0);
+    str[i] = 'x';
+    str[i + 1] = '0';
+    str[i + 2] = '\0';
+    reversestr(str);
 }
