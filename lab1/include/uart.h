@@ -22,33 +22,23 @@
  * DEALINGS IN THE SOFTWARE.
  *
  */
+#include "gpio.h"
 
-SECTIONS
-{
-    . = 0x80000;
-    .text :
-    {
-        KEEP(*(.text.boot)) *(.text .text.* .gnu.linkonce.t*)
-    }
-    .rodata :
-    { 
-        *(.rodata .rodata.* .gnu.linkonce.r*)
-    }
-    PROVIDE(_data = .);
-    .data :
-    { 
-        *(.data .data.* .gnu.linkonce.d*)
-    }
-    .bss (NOLOAD) :
-    {
-        . = ALIGN(16);
-        __bss_start = .;
-        *(.bss .bss.*)
-        *(COMMON)
-        __bss_end = .;
-    }
-    _end = .;
+/* Auxilary mini UART registers */
+#define AUX_ENABLE      ((volatile unsigned int*)(MMIO_BASE+0x00215004))
+#define AUX_MU_IO       ((volatile unsigned int*)(MMIO_BASE+0x00215040))
+#define AUX_MU_IER      ((volatile unsigned int*)(MMIO_BASE+0x00215044))
+#define AUX_MU_IIR      ((volatile unsigned int*)(MMIO_BASE+0x00215048))
+#define AUX_MU_LCR      ((volatile unsigned int*)(MMIO_BASE+0x0021504C))
+#define AUX_MU_MCR      ((volatile unsigned int*)(MMIO_BASE+0x00215050))
+#define AUX_MU_LSR      ((volatile unsigned int*)(MMIO_BASE+0x00215054))
+#define AUX_MU_MSR      ((volatile unsigned int*)(MMIO_BASE+0x00215058))
+#define AUX_MU_SCRATCH  ((volatile unsigned int*)(MMIO_BASE+0x0021505C))
+#define AUX_MU_CNTL     ((volatile unsigned int*)(MMIO_BASE+0x00215060))
+#define AUX_MU_STAT     ((volatile unsigned int*)(MMIO_BASE+0x00215064))
+#define AUX_MU_BAUD     ((volatile unsigned int*)(MMIO_BASE+0x00215068))
 
-   /DISCARD/ : { *(.comment) *(.gnu*) *(.note*) *(.eh_frame*) }
-}
-__bss_size = (__bss_end - __bss_start)>>3;
+void uart_init();
+void uart_send(unsigned int c);
+char uart_getc();
+void uart_puts(char *s);

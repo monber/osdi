@@ -1,6 +1,6 @@
 #include "string.h"
 #include "uart.h"
-#include "reboot.h"
+#include "utils.h"
 #include "mbox.h"
 
 void shell_exec();

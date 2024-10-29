@@ -31,7 +31,7 @@ void uart_init()
     register unsigned int r;
 
     /* initialize UART */
-    *AUX_ENABLE |=1;       // enable UART1, AUX mini uart
+    *AUX_ENABLE |= 1;       // enable UART1, AUX mini uart
     *AUX_MU_CNTL = 0;
     *AUX_MU_IER = 0;
     *AUX_MU_LCR = 3;       // 8 bits
@@ -40,9 +40,9 @@ void uart_init()
     *AUX_MU_IIR = 0xc6;    // disable interrupts
     
     /* map UART1 to GPIO pins */
-    r=*GPFSEL1;
-    r&=~((7<<12)|(7<<15)); // gpio14, gpio15
-    r|=(2<<12)|(2<<15);    // alt5
+    r = *GPFSEL1;
+    r &= ~((7<<12)|(7<<15)); // gpio14, gpio15
+    r |= (2<<12)|(2<<15);    // alt5
     *GPFSEL1 = r;
     *GPPUD = 0;            // enable pins 14 and 15
     r=150;

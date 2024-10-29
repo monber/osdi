@@ -70,7 +70,7 @@ int mbox_call(unsigned char ch)
     return 0;
 }
 
-void mbox_print_board_revision()
+void mbox_get_board_revision(unsigned int *board_revision)
 {
     mbox[0] = 7 * 4; // buffer size in bytes
     mbox[1] = REQUEST_CODE;
@@ -85,16 +85,10 @@ void mbox_print_board_revision()
     mbox_call(MBOX_CH_PROP); // message passing procedure call, you should implement it following the 6 steps provided above.
 
     //To Do:int2string
-    char str[MAX_BUFFER_SIZE];
-    strset(str, 0, MAX_BUFFER_SIZE);
-    int2hex(mbox[5], str);
-    uart_puts("board revision: ");
-    uart_puts(str);
-    uart_puts("\n");
-    //printf("0x%x\n", mbox[5]); // it should be 0xa020d3 for rpi3 b+
+    *board_revision = mbox[5];
 }
 
-void mbox_print_arm_memory_info()
+void mbox_get_arm_memory_info(unsigned int *mem_base_adr, unsigned int *mem_size)
 {
     mbox[0] = 8 * 4; // buffer size in bytes
     mbox[1] = REQUEST_CODE;
@@ -110,16 +104,6 @@ void mbox_print_arm_memory_info()
     mbox_call(MBOX_CH_PROP); // message passing procedure call, you should implement it following the 6 steps provided above.
 
     //To Do:int2string
-    char str[MAX_BUFFER_SIZE];
-    uart_puts("base address: ");
-    strset(str, 0, MAX_BUFFER_SIZE);
-    int2hex(mbox[5], str);
-    uart_puts(str);
-    uart_puts("\n");
-    uart_puts("size: ");
-    strset(str, 0, MAX_BUFFER_SIZE);
-    int2hex(mbox[6], str);
-    uart_puts(str);
-    uart_puts("\n");
-    //printf("0x%x\n", mbox[5]); // it should be 0xa020d3 for rpi3 b+
+    *mem_base_adr = mbox[5];
+    *mem_size = mbox[6];
 }

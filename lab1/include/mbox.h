@@ -23,6 +23,8 @@
  *
  */
 
+#include "utils.h"
+
 /* a properly aligned buffer */
 extern volatile unsigned int mbox[36];
 
@@ -53,5 +55,6 @@ extern volatile unsigned int mbox[36];
 #define END_TAG             0x00000000
 
 int mbox_call(unsigned char ch);
-void mbox_print_board_revision();
-void mbox_print_arm_memory_info();
+void mbox_get_board_revision(unsigned int *board_revision);
+void mbox_get_arm_memory_info(unsigned int *mem_base_adr, unsigned int *mem_size);
+

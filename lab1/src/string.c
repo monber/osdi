@@ -93,9 +93,8 @@ void itoa(int x, char *str)
     reversestr(str);
 }
 
-void int2hex(int x, char *str)
+void int2hex(unsigned int val, char *str)
 {
-    unsigned int val = (unsigned int)x;
     char map[6] = {'a', 'b', 'c', 'd', 'e', 'f'};
     int i = 0;
     do
@@ -109,4 +108,23 @@ void int2hex(int x, char *str)
     str[i + 1] = '0';
     str[i + 2] = '\0';
     reversestr(str);
+}
+
+void dtoa(double val, char *str)
+{
+    int intval = (int)val;
+    itoa(intval, str);
+    int intsize = strlen(str);
+    val -= (double)intval;
+    str[intsize] = '.';
+    intsize++;
+    do
+    {
+        val *= 10;
+        intval = (int)val;
+        str[intsize] = intval + '0';
+        val -= (double)intval;
+        intsize++;
+    }while(val != 0);
+    str[intsize] = '\0';
 }
