@@ -48,6 +48,7 @@ extern volatile unsigned int mbox[36];
 //
 #define GET_BOARD_REVISION  0x00010002
 #define GET_ARM_MEMORY      0x00010005
+#define SET_CLK_RATE        0x00038002
 #define REQUEST_CODE        0x00000000
 #define REQUEST_SUCCEED     0x80000000
 #define REQUEST_FAILED      0x80000001
@@ -57,4 +58,4 @@ extern volatile unsigned int mbox[36];
 int mbox_call(unsigned char ch);
 void mbox_get_board_revision(unsigned int *board_revision);
 void mbox_get_arm_memory_info(unsigned int *mem_base_adr, unsigned int *mem_size);
-
+void mbox_set_clkrate();

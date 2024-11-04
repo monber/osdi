@@ -110,12 +110,12 @@ void int2hex(unsigned int val, char *str)
     reversestr(str);
 }
 
-void dtoa(double val, char *str)
+void ftoa(float val, char *str)
 {
     int intval = (int)val;
     itoa(intval, str);
     int intsize = strlen(str);
-    val -= (double)intval;
+    val -= (float)intval;
     str[intsize] = '.';
     intsize++;
     do
@@ -123,7 +123,7 @@ void dtoa(double val, char *str)
         val *= 10;
         intval = (int)val;
         str[intsize] = intval + '0';
-        val -= (double)intval;
+        val -= (float)intval;
         intsize++;
     }while(val != 0);
     str[intsize] = '\0';

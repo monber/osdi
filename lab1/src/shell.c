@@ -11,31 +11,31 @@ static void shell_print_mbox_info()
     int2hex(board_revision, mbox_print_buf);
     uart_puts("board revision: ");
     uart_puts(mbox_print_buf);
-    uart_send('\n');
+    uart_puts("\n\r");
     //
     int2hex(mem_base_adr, mbox_print_buf);
     uart_puts("memory base address: ");
     uart_puts(mbox_print_buf);
-    uart_send('\n');
+    uart_puts("\n\r");
     //
     int2hex(mem_size, mbox_print_buf);
     uart_puts("memory size: ");
     uart_puts(mbox_print_buf);
-    uart_send('\n');
+    uart_puts("\n\r");
 }
 
 static void shell_print_timestamp()
 {
-    unsigned long timer_count = 1;
-    unsigned long timer_frequency = 3;
-    asm("mrs %0, CNTFRQ_EL0" : "=r" (timer_count));
-    asm("mrs %0, CNTPCT_EL0" : "=r" (timer_frequency));
-    double time = (double)timer_count / timer_frequency;
+    unsigned long int timer_count = 1;
+    unsigned long int timer_frequency = 3;
+    asm("mrs %0, CNTFRQ_EL0" : "=r" (timer_frequency));
+    asm("mrs %0, CNTPCT_EL0" : "=r" (timer_count));
+    float time = (float)timer_count / timer_frequency;
     char buffer[MAX_BUFFER_SIZE];
-    dtoa(time, buffer);
+    ftoa(time, buffer);
     uart_send('[');
     uart_puts(buffer);
-    uart_puts("]\n'");
+    uart_puts("]\n\r");
 }
 
 void shell_exec()
@@ -50,15 +50,15 @@ void shell_exec()
     //output result
     if(strcmp(buffer, "help") == 0)
     {
-        uart_puts("help      : print this help menu\n");
-        uart_puts("hello     : print Hello World\n");
-        uart_puts("mailbox   : print info related to gpu\n");
-        uart_puts("reboot    : reboot the device\n");
-        uart_puts("timestamp : print timestamp in cpu\n");
+        uart_puts("help      : print this help menu\n\r");
+        uart_puts("hello     : print Hello World\n\r");
+        uart_puts("mailbox   : print info related to gpu\n\r");
+        uart_puts("reboot    : reboot the device\n\r");
+        uart_puts("timestamp : print timestamp in cpu\n\r");
     }
     else if(strcmp(buffer, "hello") == 0)
     {
-        uart_puts("Hello World\n");
+        uart_puts("Hello World\n\r");
     }
     else if(strcmp(buffer, "mailbox") == 0)
     {
@@ -66,7 +66,7 @@ void shell_exec()
     }
     else if(strcmp(buffer, "reboot") == 0)
     {
-        uart_puts("cpu reboot...\n");
+        uart_puts("cpu reboot...\n\r");
         reset(1000);
     }
     else if(strcmp(buffer, "timestamp") == 0)
@@ -77,7 +77,7 @@ void shell_exec()
     {
         uart_puts("Error, command ");
         uart_puts(buffer);
-        uart_puts(" not found. Please try <help>\n");
+        uart_puts(" not found. Please try <help>\n\r");
     }
 }
 
@@ -90,6 +90,7 @@ void shell_input(char *str)
         uart_send(c);
         if(c == '\n')
         {
+            uart_send('\r');
             break;
         }
         *curs = c;

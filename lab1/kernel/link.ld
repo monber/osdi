@@ -21,5 +21,5 @@ SECTIONS
         *(.bss)
         __bss_end = .;
     }
-    __bss_size = (__bss_start - __bss_end) >> 3;
+    __bss_size = (__bss_end - __bss_start) >> 3;
 }

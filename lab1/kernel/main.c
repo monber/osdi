@@ -2,7 +2,7 @@
 
 int main()
 {
-    uart_init();
+    uart_init(PL011);
 
     while(1)
     {
