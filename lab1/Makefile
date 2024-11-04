@@ -46,5 +46,9 @@ clean:
 	rm kernel/kernel8.elf *.o >/dev/null 2>/dev/null || true
 	rm src/*.o kernel/*.o || true
 
-run:
-	qemu-system-aarch64 -M raspi3 -kernel kernel/kernel8.img -serial null -serial stdio
+run:all
+	qemu-system-aarch64 -M raspi3 -kernel kernel/kernel8.img -serial stdio
+
+tty:all
+	qemu-system-aarch64 -M raspi3 -kernel kernel/kernel8.img -serial pty
+

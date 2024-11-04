@@ -43,6 +43,10 @@ char *strcpy(char *dest, char *src)
 
 int strlen(const char *str)
 {
+    if(!str)
+    {
+        return 0;
+    }
     int count = 0;
     while(*(str + count) != '\0')
     {
@@ -53,6 +57,10 @@ int strlen(const char *str)
 
 void strset(char *dest, int val, int size)
 {
+    if(!dest)
+    {
+        return;
+    }
     char *cur = dest;
     while(size > 0)
     {
@@ -64,6 +72,10 @@ void strset(char *dest, int val, int size)
 
 void reversestr(char *str)
 {
+    if(!str)
+    {
+        return;
+    }
     int size = strlen(str);
     for(int i = 0; i < (size + 1) / 2; i++)
     {

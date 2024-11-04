@@ -73,6 +73,12 @@ void shell_exec()
     {
         shell_print_timestamp();
     }
+    else if(strlen(buffer) == MAX_BUFFER_SIZE)
+    {
+        uart_puts("\n\r");
+        uart_puts("Cmd is too long to process.\n\r");
+        uart_puts("Maximum input length is 128\n\r");
+    }
     else
     {
         uart_puts("Error, command ");
@@ -83,8 +89,8 @@ void shell_exec()
 
 void shell_input(char *str)
 {
-    char *curs = str;
-    while(1)
+    int n = 0;
+    while(n < MAX_BUFFER_SIZE)
     {
         char c = uart_getc();
         uart_send(c);
@@ -93,7 +99,7 @@ void shell_input(char *str)
             uart_send('\r');
             break;
         }
-        *curs = c;
-        curs++;
+        str[n] = c;
+        n++;
     }
 }
