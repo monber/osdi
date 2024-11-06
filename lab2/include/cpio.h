@@ -1,7 +1,10 @@
 #include "string.h"
 #include "uart.h"
-#define cpio_adr 0x8000000 //for QEMU
+#include "utils.h"
+
+#define CPIO_BASE_ADR 0x8000000 //for QEMU
 #define CPIO_ALIGNMENT 4
+#define CPIO_END_FILENAME "TRAILER!!!"
 
 typedef struct cpio_header 
 {
@@ -22,4 +25,4 @@ typedef struct cpio_header
 }CPIO_HEADER;
 
 void cpio_ls();
-void *cpio_get_file(const char *name, unsigned long *size);
+void *cpio_get_file(const char *name);

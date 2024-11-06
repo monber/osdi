@@ -23,26 +23,43 @@
  *
  */
 #include "uart.h"
+int uart_mode = MINI_UART;
 /**
  * Set baud rate and characteristics (115200 8N1) and map to GPIO
  */
-void uart_init()
+void uart_init(int uart_mode_)
 {
+    uart_mode = uart_mode_;
     register unsigned int r;
-
-    /* initialize UART */
-    *AUX_ENABLE |=1;       // enable UART1, AUX mini uart
-    *AUX_MU_CNTL = 0;
-    *AUX_MU_IER = 0;
-    *AUX_MU_LCR = 3;       // 8 bits
-    *AUX_MU_MCR = 0;
-    *AUX_MU_BAUD = 270;    // 115200 baud
-    *AUX_MU_IIR = 0xc6;    // disable interrupts
-    
+    if(uart_mode == MINI_UART)
+    {
+        /* initialize UART */
+        *AUX_ENABLE |= 1;       // enable UART1, AUX mini uart
+        *AUX_MU_CNTL = 0;
+        *AUX_MU_IER = 0;
+        *AUX_MU_LCR = 3;       // 8 bits
+        *AUX_MU_MCR = 0;
+        *AUX_MU_BAUD = 270;    // 115200 baud
+        *AUX_MU_IIR = 0xc6;    // disable interrupts
+    }
+#if USE_PL011
+    else if(uart_mode == PL011)
+    {
+        *PL011_CR = 0;         // turn off UART0
+        mbox_set_clkrate();
+    }
+#endif
     /* map UART1 to GPIO pins */
-    r=*GPFSEL1;
-    r&=~((7<<12)|(7<<15)); // gpio14, gpio15
-    r|=(2<<12)|(2<<15);    // alt5
+    r = *GPFSEL1;
+    r &= ~((7<<12)|(7<<15)); // gpio14, gpio15
+    if(uart_mode == MINI_UART)
+    {
+        r |= (2<<12)|(2<<15);    // alt5
+    }
+    else if(uart_mode == PL011)
+    {
+        r |= (4<<12)|(4<<15);    // alt0
+    }
     *GPFSEL1 = r;
     *GPPUD = 0;            // enable pins 14 and 15
     r=150;
@@ -57,35 +74,87 @@ void uart_init()
         asm volatile("nop");
     }
     *GPPUDCLK0 = 0;        // flush GPIO setup
-    *AUX_MU_CNTL = 3;      // enable Tx, Rx
+    if(uart_mode == MINI_UART)
+    {
+        *AUX_MU_CNTL = 3;      // enable Tx, Rx
+    }
+#if USE_PL011
+    else if(uart_mode == PL011)
+    {
+        *PL011_ICR = 0x7FF;    // clear interrupts
+        *PL011_IBRD = 0x2;
+        *PL011_FBRD = 0xb;
+        *PL011_LCRH = 0x7 << 4;
+        *PL011_CR = 0x301;
+    }
+#endif
 }
 
 /**
  * Send a character
  */
 void uart_send(unsigned int c) {
-    /* wait until we can send */
-    do
+    switch(uart_mode)
     {
-        asm volatile("nop");
-    }while(!(*AUX_MU_LSR & 0x20));
-    /* write the character to the buffer */
-    *AUX_MU_IO = c;
+        case MINI_UART:
+        {
+            /* wait until we can send */
+            do
+            {
+                asm volatile("nop");
+            }while(!(*AUX_MU_LSR & 0x20));
+            /* write the character to the buffer */
+            *AUX_MU_IO = c;
+            break;
+        }
+#if USE_PL011
+        case PL011:
+        {
+            do
+            {
+                asm volatile("nop");
+            }while(*PL011_FR & 0x20);
+            *PL011_DR = c;
+            break;
+        }
+#endif
+    }
 }
 
 /**
  * Receive a character
  */
 char uart_getc() {
-    char r;
-    /* wait until something is in the buffer */
-    do
+    char r = '0';
+    switch(uart_mode)
     {
-        asm volatile("nop");
-    }while(!(*AUX_MU_LSR & 0x01));
-    /* read it and return */
-    r=(char)(*AUX_MU_IO);
-    /* convert carriage return to newline */
+        case MINI_UART:
+        {
+            /* wait until something is in the buffer */
+            do
+            {
+                asm volatile("nop");
+            }while(!(*AUX_MU_LSR & 0x01));
+            /* read it and return */
+            r=(char)(*AUX_MU_IO);
+            /* convert carriage return to newline */
+            break;
+        }
+#if USE_PL011
+        case PL011:
+        {
+            do
+            {
+                asm volatile("nop");
+            }while(*PL011_FR & 0x010);
+            /* read it and return */
+            r=(char)(*PL011_DR);
+            /* convert carriage return to newline */
+            break;
+        }
+#endif
+    }
+    
     return r == '\r' ? '\n' : r;
 }
 
@@ -95,8 +164,6 @@ char uart_getc() {
 void uart_puts(char *s) {
     while(*s) {
         /* convert newline to carriage return + newline */
-        //if(*s=='\n')
-        //    uart_send('\r');
         uart_send(*s++);
     }
 }

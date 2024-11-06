@@ -22,9 +22,12 @@
  * DEALINGS IN THE SOFTWARE.
  *
  */
-#include "gpio.h"
+#ifndef UART_H_
+#define UART_H_
 
-#define MAX_BUFFER_SIZE 128
+#include "gpio.h"
+#include "mbox.h"
+
 /* Auxilary mini UART registers */
 #define AUX_ENABLE      ((volatile unsigned int*)(MMIO_BASE+0x00215004))
 #define AUX_MU_IO       ((volatile unsigned int*)(MMIO_BASE+0x00215040))
@@ -39,7 +42,24 @@
 #define AUX_MU_STAT     ((volatile unsigned int*)(MMIO_BASE+0x00215064))
 #define AUX_MU_BAUD     ((volatile unsigned int*)(MMIO_BASE+0x00215068))
 
-void uart_init();
+/* PL011 registers */
+#define PL011_DR        ((volatile unsigned int*)(MMIO_BASE + 0x201000))
+#define PL011_FR        ((volatile unsigned int*)(MMIO_BASE + 0x201018))
+#define PL011_IBRD      ((volatile unsigned int*)(MMIO_BASE + 0x201024))
+#define PL011_FBRD      ((volatile unsigned int*)(MMIO_BASE + 0x201028))
+#define PL011_LCRH      ((volatile unsigned int*)(MMIO_BASE + 0x20102c))
+#define PL011_CR        ((volatile unsigned int*)(MMIO_BASE + 0x201030))
+#define PL011_ICR       ((volatile unsigned int*)(MMIO_BASE + 0x201044))
+
+void uart_init(int uart_mode);
 void uart_send(unsigned int c);
 char uart_getc();
 void uart_puts(char *s);
+
+typedef enum uart_mode
+{
+    MINI_UART = 0,
+    PL011 = 1,
+}UART_MODE;
+
+#endif

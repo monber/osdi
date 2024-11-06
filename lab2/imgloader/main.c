@@ -24,18 +24,43 @@
  */
 
 #include "uart.h"
+#include "string.h"
+
+#define USE_PL011 0
+
+void shell_input(char *str)
+{
+    int n = 0;
+    while(n < MAX_BUFFER_SIZE)
+    {
+        char c = uart_getc();
+        uart_send(c);
+        if(c == '\n')
+        {
+            uart_send('\r');
+            break;
+        }
+        str[n] = c;
+        n++;
+    }
+}
 
 void load_img()
 {
     int loadsize = 0;
     char *loadadr = (char *)0x80000;
-    uart_puts("Rpi3 is ready\n");
+    uart_puts("Rpi3 is ready. Please send kernel img size\n");
     while(1)
     {
         char c = uart_getc();
         if (c == '\n')
         {
             break;
+        }
+        else if (c < '0' || c >'9')
+        {
+            uart_puts("Input error. Please start again\n");
+            return ;
         }
         loadsize = loadsize * 10 + c - '0';
     }
@@ -62,7 +87,19 @@ void load_img()
 void main()
 {
     // set up serial console
-    uart_init();
-    load_img();
+    uart_init(MINI_UART);
+    while(1)
+    {
+        char buffer[MAX_BUFFER_SIZE];
+        strset(buffer, 0, MAX_BUFFER_SIZE);
 
+        //input cmd into shell
+        uart_puts("# ");
+        shell_input(buffer);
+
+        if(strcmp(buffer, "loadimg") == 0)
+        {
+            load_img();
+        }
+    }
 }

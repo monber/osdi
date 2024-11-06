@@ -1,6 +1,4 @@
-#define PM_PASSWORD 0x5a000000
-#define PM_RSTC 0x3F10001c
-#define PM_WDOG 0x3F100024
+#include "utils.h"
 
 void set_reg(long addr, unsigned int value)
 {
@@ -18,4 +16,9 @@ void cancel_reset()
 {
     set_reg(PM_RSTC, PM_PASSWORD | 0);  // full reset
     set_reg(PM_WDOG, PM_PASSWORD | 0);  // number of watchdog tick
+}
+
+unsigned int align(unsigned int size, unsigned int n)
+{
+    return (size + (n - 1)) & (~(n - 1));
 }

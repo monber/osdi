@@ -1,10 +1,5 @@
 #include "cpio.h"
 
-static unsigned long cpio_align(unsigned long val, unsigned long align)
-{
-    return (val + align - 1) & (~(align - 1));
-}
-
 static unsigned long parse_hex_str(char *s, unsigned int len)
 {
     unsigned long ret = 0;
@@ -31,62 +26,62 @@ static unsigned long parse_hex_str(char *s, unsigned int len)
     return ret;
 }
 
-static int cpio_strcmp(const char *s1, const char *s2, unsigned long size)
+static unsigned long cpio_align(unsigned long n, unsigned long align)
 {
-    for(unsigned long i = 0; i < size; i++)
+    return (n + align - 1) & (~(align - 1));
+}
+/* return 1 for EOF, 0 for normal */
+static int cpio_parse_header(CPIO_HEADER *archive, char **filename, void **data, CPIO_HEADER **next)
+{
+    *filename = (char *)archive + sizeof(CPIO_HEADER);
+    if(strcmp(*filename, CPIO_END_FILENAME) == 0)
     {
-        if(s1[i] != s2[i])
-        {
-            return s1[i] - s2[i];
-        }
-        if(s1[i] == '0')
-        {
-            return 0;
-        }
+        return 1;
     }
+    unsigned long namesize = parse_hex_str(archive->c_namesize, sizeof(archive->c_namesize));
+    *data = (void *)(cpio_align((unsigned long)*filename + namesize, CPIO_ALIGNMENT));
+    unsigned long filesize = parse_hex_str(archive->c_filesize, sizeof(archive->c_filesize));
+    *next = (CPIO_HEADER *)(cpio_align((unsigned long)*data + filesize, CPIO_ALIGNMENT));
     return 0;
 }
 
 void cpio_ls()
 {
-    char *curadr = (char *)cpio_adr;
+    CPIO_HEADER *header = (CPIO_HEADER *)CPIO_BASE_ADR;
     while(1)
     {
-        if(strcmp((char *)(curadr + sizeof(CPIO_HEADER)), "TRAILER!!!") == 0)
+        char *filename = NULL;
+        void *filedata = NULL;
+        CPIO_HEADER *next = NULL;
+        int error = cpio_parse_header(header, &filename, &filedata, &next);
+        if(error)
         {
             break;
         }
-        CPIO_HEADER *cpio_ptr = (CPIO_HEADER *)curadr;
-        unsigned long namesize = parse_hex_str(cpio_ptr->c_namesize, sizeof(cpio_ptr->c_namesize));
-        unsigned long filesize = parse_hex_str(cpio_ptr->c_filesize, sizeof(cpio_ptr->c_filesize));
-        char *namec = (curadr + sizeof(CPIO_HEADER));
-        for(unsigned long i = 0; i < namesize; i++)
-        {
-            uart_send(namec[i]);
-        }
-        uart_send('\n');
-        curadr += cpio_align(sizeof(CPIO_HEADER) + namesize + filesize, CPIO_ALIGNMENT);
+        uart_puts(filename);
+        uart_puts("\n\r");
+        header = next;
     }
 }
 
-void *cpio_get_file(const char *name, unsigned long *size)
+void *cpio_get_file(const char *name)
 {
-    unsigned char *curadr = (unsigned char *)cpio_adr;
+    CPIO_HEADER *header = (CPIO_HEADER *)CPIO_BASE_ADR;
     while(1)
     {
-        if(strcmp((char *)(curadr + sizeof(CPIO_HEADER)), "TRAILER!!!") == 0)
+        char *filename = NULL;
+        void *filedata = NULL;
+        CPIO_HEADER *next = NULL;
+        int error = cpio_parse_header(header, &filename, &filedata, &next);
+        if(error)
         {
             break;
         }
-        CPIO_HEADER *cpio_ptr = (CPIO_HEADER *)curadr;
-        unsigned long namesize = parse_hex_str(cpio_ptr->c_namesize, sizeof(cpio_ptr->c_namesize));
-        unsigned long filesize = parse_hex_str(cpio_ptr->c_filesize, sizeof(cpio_ptr->c_filesize));
-        if(strcmp((char *)(curadr + sizeof(CPIO_HEADER)), name) == 0)
+        if(strcmp(name, filename) == 0)
         {
-            *size = filesize;
-            return (void *)(curadr + cpio_align((sizeof(CPIO_HEADER) + namesize), CPIO_ALIGNMENT));
+            return filedata;
         }
-        curadr += cpio_align(sizeof(CPIO_HEADER) + namesize + filesize, CPIO_ALIGNMENT);
+        header = next;
     }
-    return 0;
+    return NULL;
 }

@@ -43,6 +43,10 @@ char *strcpy(char *dest, char *src)
 
 int strlen(const char *str)
 {
+    if(!str)
+    {
+        return 0;
+    }
     int count = 0;
     while(*(str + count) != '\0')
     {
@@ -53,6 +57,10 @@ int strlen(const char *str)
 
 void strset(char *dest, int val, int size)
 {
+    if(!dest)
+    {
+        return;
+    }
     char *cur = dest;
     while(size > 0)
     {
@@ -64,6 +72,10 @@ void strset(char *dest, int val, int size)
 
 void reversestr(char *str)
 {
+    if(!str)
+    {
+        return;
+    }
     int size = strlen(str);
     for(int i = 0; i < (size + 1) / 2; i++)
     {
@@ -93,9 +105,8 @@ void itoa(int x, char *str)
     reversestr(str);
 }
 
-void int2hex(int x, char *str)
+void int2hex(unsigned int val, char *str)
 {
-    unsigned int val = (unsigned int)x;
     char map[6] = {'a', 'b', 'c', 'd', 'e', 'f'};
     int i = 0;
     do
@@ -109,4 +120,23 @@ void int2hex(int x, char *str)
     str[i + 1] = '0';
     str[i + 2] = '\0';
     reversestr(str);
+}
+
+void ftoa(float val, char *str)
+{
+    int intval = (int)val;
+    itoa(intval, str);
+    int intsize = strlen(str);
+    val -= (float)intval;
+    str[intsize] = '.';
+    intsize++;
+    do
+    {
+        val *= 10;
+        intval = (int)val;
+        str[intsize] = intval + '0';
+        val -= (float)intval;
+        intsize++;
+    }while(val != 0);
+    str[intsize] = '\0';
 }
