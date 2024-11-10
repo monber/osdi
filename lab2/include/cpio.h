@@ -1,10 +1,15 @@
+#ifndef CPIO_H_
+#define CPIO_H_
+
 #include "string.h"
 #include "uart.h"
 #include "utils.h"
 
-#define CPIO_BASE_ADR 0x8000000 //for QEMU
+//#define CPIO_BASE_ADR 0x8000000 //for QEMU
 #define CPIO_ALIGNMENT 4
 #define CPIO_END_FILENAME "TRAILER!!!"
+
+extern void * CPIO_BASE_ADR;
 
 typedef struct cpio_header 
 {
@@ -26,3 +31,5 @@ typedef struct cpio_header
 
 void cpio_ls();
 void *cpio_get_file(const char *name);
+
+#endif

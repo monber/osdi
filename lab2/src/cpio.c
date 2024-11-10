@@ -1,5 +1,5 @@
 #include "cpio.h"
-
+void * CPIO_BASE_ADR = NULL;
 static unsigned long parse_hex_str(char *s, unsigned int len)
 {
     unsigned long ret = 0;

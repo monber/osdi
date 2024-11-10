@@ -88,6 +88,7 @@ static void shell_help()
     uart_puts("ls        : print files in rpi3\n\r");
     uart_puts("cat       : print data of search file\n\r");
     uart_puts("malloc    : print malloc string\n\r");
+    uart_puts("fdt       : traverse device in rpi3\n\r");
 }
 
 void shell_exec()
@@ -132,6 +133,10 @@ void shell_exec()
     else if(strcmp(buffer, "malloc") == 0)
     {
         shell_malloc();
+    }
+    else if(strcmp(buffer, "fdt") == 0)
+    {
+        fdt_traversal(fdt_print_name_cb);
     }
     else if(strlen(buffer) == MAX_BUFFER_SIZE)
     {

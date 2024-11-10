@@ -13,7 +13,7 @@ def send_img(tty,kernel):
     print("Please sent the kernel image size:")
     tty.write(("loadimg\n").encode())
     kernel_size = os.stat(kernel).st_size
-    print(kernel_size)
+    # print(kernel_size)
     print(tty.read_until(b"Rpi3 is ready. Please send kernel img size\n").decode(), end = "")
     tty.write((str(kernel_size) + "\n").encode())
     print(tty.read_until(b"Rpi3 starts to load img\n").decode(), end = "")
@@ -29,6 +29,6 @@ def send_img(tty,kernel):
 if __name__ == "__main__":
     PORT = sys.argv[1]
     tty = serial.Serial(PORT, BAUD_RATE, timeout=5)
-    send_img(tty,"../kernel8.img")
+    send_img(tty,"../kernel/kernel8.img")
 
     

@@ -80,6 +80,7 @@ void load_img()
         "mov x2, x12;"
         "mov x3, x13;"
         // we must force an absolute address to branch to
+        // x30 is used as LR in AArch64
         "mov x30, 0x80000; ret"
     );
 }

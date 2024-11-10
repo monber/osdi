@@ -36,7 +36,7 @@ clean:
 	rm -rf imgloader/kernel8.elf
 
 run:all
-	qemu-system-aarch64 -M raspi3 -kernel kernel/kernel8.img -serial null -serial stdio -initrd archive/initramfs.cpio
+	qemu-system-aarch64 -M raspi3 -kernel kernel/kernel8.img -serial null -serial stdio -initrd archive/initramfs.cpio -dtb bcm2710-rpi-3-b-plus.dtb
 
 load:all
 	qemu-system-aarch64 -M raspi3 -kernel imgloader/kernel8.img -serial null -serial pty
