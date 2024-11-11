@@ -25,8 +25,7 @@
 
 #include "uart.h"
 #include "string.h"
-
-#define USE_PL011 0
+#include "mbox.h"
 
 void shell_input(char *str)
 {
@@ -49,7 +48,7 @@ void load_img()
 {
     int loadsize = 0;
     char *loadadr = (char *)0x80000;
-    uart_puts("Rpi3 is ready. Please send kernel img size\n");
+    uart_puts("Rpi3 is ready. Please send kernel img size\n\r");
     while(1)
     {
         char c = uart_getc();
@@ -59,20 +58,19 @@ void load_img()
         }
         else if (c < '0' || c >'9')
         {
-            uart_puts("Input error. Please start again\n");
+            uart_puts("Input error. Please start again\n\r");
             return ;
         }
         loadsize = loadsize * 10 + c - '0';
     }
-    uart_puts("Rpi3 starts to load img\n");
+    uart_puts("Rpi3 starts to load img\n\r");
     while(loadsize > 0)
     {
         *loadadr = uart_getc();
-        uart_send('.');
         loadadr++;
         loadsize--;
     }
-    uart_puts("load finish\n");
+    uart_puts("load finish\n\r");
     //
     asm volatile (
         "mov x0, x10;"
@@ -88,7 +86,7 @@ void load_img()
 void main()
 {
     // set up serial console
-    uart_init(MINI_UART);
+    uart_init(PL011);
     while(1)
     {
         char buffer[MAX_BUFFER_SIZE];

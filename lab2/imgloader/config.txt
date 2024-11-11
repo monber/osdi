@@ -1,0 +1,2 @@
+kernel=imgloader.img
+arm_64bit=1

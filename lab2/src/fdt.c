@@ -1,8 +1,5 @@
 #include "fdt.h"
 
-void * fdt_base_adr = NULL;
-
-
 static unsigned int fdt32_be(const void* p)
 {
     const unsigned char *buf = (const unsigned char *)p;
@@ -12,21 +9,7 @@ static unsigned int fdt32_be(const void* p)
                        (buf[3]);
     return ret;
 }
-/*
-static unsigned long fdt64_be(const void* p)
-{
-    const unsigned char *buf = (const unsigned char *)p;
-    unsigned long ret = (buf[0] << 56) |
-                       (buf[1] << 48) |
-                       (buf[2] << 40) |
-                       (buf[3] << 32) |
-                       (buf[4] << 24) |
-                       (buf[5] << 16) |
-                       (buf[6] << 8) |
-                       (buf[7]);
-    return ret;
-}
-*/
+
 static int fdt_parse_struct(FDT_HEADER *fdt, char *ptr, char **next, fdt_callback cb)
 {
     unsigned int token = fdt32_be((void *)ptr);
@@ -37,19 +20,6 @@ static int fdt_parse_struct(FDT_HEADER *fdt, char *ptr, char **next, fdt_callbac
         case FDT_BEGIN_NODE:
         {
             int namesize = strlen(ptr) + 1;
-            /*
-            char s[MAX_BUFFER_SIZE];
-            if(*ptr)
-            {
-                uart_puts(ptr);
-                uart_puts("\n");
-            }
-            */
-            /*
-            itoa(namesize, s);
-            uart_puts(s);
-            uart_send('\n');
-            */
             *next = ptr + align(namesize, FDT_ALIGNEMENT_32);
             //uart_puts("FDT_BEGIN_NODE\n\r");
             break;
@@ -91,9 +61,10 @@ static int fdt_parse_struct(FDT_HEADER *fdt, char *ptr, char **next, fdt_callbac
 
 void fdt_traversal(fdt_callback cb)
 {
-    FDT_HEADER *fdt = (FDT_HEADER *)fdt_base_adr;
+    FDT_HEADER *fdt = (FDT_HEADER *)_fdt_ptr;
     if(fdt32_be((void *)&fdt->magic) != FDT_MAGIC_WORD)
     {
+        uart_puts("Warn: read abnormal fdt magic word\n\r");
         return ;
     }
     char *ptr = ((char *)fdt + fdt32_be(&fdt->off_dt_struct));
@@ -109,13 +80,6 @@ void fdt_traversal(fdt_callback cb)
     }
 }
 
-void fdt_init()
-{
-    unsigned long int adr;
-    asm("mov %0, x0" : "=r" (adr));
-    fdt_base_adr = (void *)adr;
-}
-
 void fdt_initramfs_cb(FDT_HEADER *fdt, char *ptr, unsigned int token)
 {
     if(token != FDT_PROP)
@@ -126,7 +90,7 @@ void fdt_initramfs_cb(FDT_HEADER *fdt, char *ptr, unsigned int token)
     char *string_ptr = (char *)fdt + fdt32_be((void *)&fdt->off_dt_strings) + nameoff;
     if(strcmp(string_ptr, "linux,initrd-start") == 0)
     {
-        CPIO_BASE_ADR = (void *)(fdt32_be((void *)(ptr + 12)));
+        CPIO_BASE_ADR = (void *)(long)(fdt32_be((void *)(ptr + 12)));
     }
 }
 

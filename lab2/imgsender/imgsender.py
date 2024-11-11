@@ -12,6 +12,7 @@ BAUD_RATE = 115200
 def send_img(tty,kernel):
     print("Please sent the kernel image size:")
     tty.write(("loadimg\n").encode())
+    time.sleep(0.1)
     kernel_size = os.stat(kernel).st_size
     # print(kernel_size)
     print(tty.read_until(b"Rpi3 is ready. Please send kernel img size\n").decode(), end = "")
@@ -21,9 +22,9 @@ def send_img(tty,kernel):
     with open(kernel, "rb") as image:
         while kernel_size > 0:
             kernel_size -= tty.write(image.read(1))
-            tty.read_until(b".")
+        print(tty.read_until(b"load finish\n").decode(), end="")
     
-    print(tty.read_until(b"load finish\n").decode(), end="")
+    
     return
 
 if __name__ == "__main__":

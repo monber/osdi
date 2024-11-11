@@ -28,11 +28,9 @@ typedef struct fdt_header {
 }FDT_HEADER;
 
 void fdt_traversal();
-void fdt_init();
 
 typedef void (*fdt_callback)(FDT_HEADER*, char*, unsigned int);
 void fdt_initramfs_cb(FDT_HEADER *fdt, char *ptr, unsigned int token);
 void fdt_print_name_cb(FDT_HEADER *fdt, char *ptr, unsigned int token);
-
-extern void * CPIO_BASE_ADR;
+extern void *_fdt_ptr;
 #endif

@@ -25,6 +25,27 @@ int strcmp(const char *str1, const char *str2)
     return c1 - c2;
 }
 
+int strncmp(char *str1, char *str2, unsigned int n)
+{
+    if(!str1 || !str2)
+    {
+        return 0;
+    }
+    unsigned char *p1 = (unsigned char *)str1;
+    unsigned char *p2 = (unsigned char *)str2;
+    while(n > 0)
+    {
+        if(*p1 == '\0' || *p1 != *p2)
+        {
+            return *p1 - *p2;
+        }
+        p1++;
+        p2++;
+        n--;
+    }
+    return 0;
+}
+
 char *strcpy(char *dest, char *src)
 {
     char *strdst = dest;

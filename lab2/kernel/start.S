@@ -41,6 +41,10 @@ _start:
     ldr     x1, =_start
     mov     sp, x1
 
+    //set fdt address
+    ldr     x1, =_fdt_ptr
+    str     x0, [x1]
+
     // clear bss
     ldr     x1, =__bss_start
     ldr     w2, =__bss_size
@@ -53,3 +57,7 @@ _start:
 4:  bl      main
     // for failsafe, halt this core too
     b       1b
+
+.global _fdt_ptr
+.data
+_fdt_ptr: .8byte 0x0

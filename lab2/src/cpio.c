@@ -30,9 +30,14 @@ static unsigned long cpio_align(unsigned long n, unsigned long align)
 {
     return (n + align - 1) & (~(align - 1));
 }
-/* return 1 for EOF, 0 for normal */
+/* return 1 for EOF, 0 for normal, -1 for wrong magic word */
 static int cpio_parse_header(CPIO_HEADER *archive, char **filename, void **data, CPIO_HEADER **next)
 {
+    if(strncmp(archive->c_magic, CPIO_MAGIC_WORD, sizeof(archive->c_magic)) != 0)
+    {
+        uart_puts("Warn: read abnormal cpio magic word\n\r");
+        return -1;
+    }
     *filename = (char *)archive + sizeof(CPIO_HEADER);
     if(strcmp(*filename, CPIO_END_FILENAME) == 0)
     {

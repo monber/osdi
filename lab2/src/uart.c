@@ -42,13 +42,11 @@ void uart_init(int uart_mode_)
         *AUX_MU_BAUD = 270;    // 115200 baud
         *AUX_MU_IIR = 0xc6;    // disable interrupts
     }
-#if USE_PL011
     else if(uart_mode == PL011)
     {
         *PL011_CR = 0;         // turn off UART0
         mbox_set_clkrate();
     }
-#endif
     /* map UART1 to GPIO pins */
     r = *GPFSEL1;
     r &= ~((7<<12)|(7<<15)); // gpio14, gpio15
@@ -78,7 +76,6 @@ void uart_init(int uart_mode_)
     {
         *AUX_MU_CNTL = 3;      // enable Tx, Rx
     }
-#if USE_PL011
     else if(uart_mode == PL011)
     {
         *PL011_ICR = 0x7FF;    // clear interrupts
@@ -87,7 +84,6 @@ void uart_init(int uart_mode_)
         *PL011_LCRH = 0x7 << 4;
         *PL011_CR = 0x301;
     }
-#endif
 }
 
 /**
@@ -107,7 +103,6 @@ void uart_send(unsigned int c) {
             *AUX_MU_IO = c;
             break;
         }
-#if USE_PL011
         case PL011:
         {
             do
@@ -117,7 +112,6 @@ void uart_send(unsigned int c) {
             *PL011_DR = c;
             break;
         }
-#endif
     }
 }
 
@@ -140,7 +134,6 @@ char uart_getc() {
             /* convert carriage return to newline */
             break;
         }
-#if USE_PL011
         case PL011:
         {
             do
@@ -152,7 +145,6 @@ char uart_getc() {
             /* convert carriage return to newline */
             break;
         }
-#endif
     }
     
     return r == '\r' ? '\n' : r;
