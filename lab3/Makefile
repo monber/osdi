@@ -1,11 +1,12 @@
 #declare variable
 CC = aarch64-linux-gnu-gcc
-CFLAGS = -c -Wall -Iinclude -ffreestanding -nostdinc -nostdlib -nostartfiles
+CFLAGS = -c -g -Wall -Iinclude -ffreestanding -nostdinc -nostdlib -nostartfiles
 SRCS = $(wildcard src/*.c)
 OBJS = $(SRCS:.c=.o)
 K_SRCS = $(wildcard kernel/*.c)
+K_ASMS = $(wildcard kernel/*.S)
 K_OBJS = $(K_SRCS:.c=.o) \
-			kernel/start.o
+		 $(K_ASMS:.S=.o)
 
 all: clean kernel/kernel8.img
 #all: clean imgloader/kernel8.img
@@ -27,3 +28,6 @@ clean:
 
 run:all
 	qemu-system-aarch64 -M raspi3 -kernel kernel/kernel8.img -serial stdio -initrd archive/initramfs.cpio -dtb kernel/bcm2710-rpi-3-b-plus.dtb
+
+gdb:all
+	qemu-system-aarch64 -M raspi3 -kernel kernel/kernel8.img -serial stdio -initrd archive/initramfs.cpio -dtb kernel/bcm2710-rpi-3-b-plus.dtb -s -S

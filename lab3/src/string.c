@@ -126,7 +126,7 @@ void itoa(int x, char *str)
     reversestr(str);
 }
 
-void int2hex(unsigned int val, char *str)
+void int2hex(unsigned long int val, char *str)
 {
     char map[6] = {'a', 'b', 'c', 'd', 'e', 'f'};
     int i = 0;

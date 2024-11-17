@@ -7,20 +7,16 @@ static void shell_print_mbox_info()
     unsigned int mem_size = 0;
     mbox_get_board_revision(&board_revision);
     mbox_get_arm_memory_info(&mem_base_adr, &mem_size);
-    char mbox_print_buf[MAX_BUFFER_SIZE];
-    int2hex(board_revision, mbox_print_buf);
     uart_puts("board revision: ");
-    uart_puts(mbox_print_buf);
+    uart_put_hex(board_revision);
     uart_puts("\n\r");
     //
-    int2hex(mem_base_adr, mbox_print_buf);
     uart_puts("memory base address: ");
-    uart_puts(mbox_print_buf);
+    uart_put_hex(mem_base_adr);
     uart_puts("\n\r");
     //
-    int2hex(mem_size, mbox_print_buf);
     uart_puts("memory size: ");
-    uart_puts(mbox_print_buf);
+    uart_put_hex(mem_size);
     uart_puts("\n\r");
 }
 
@@ -89,6 +85,7 @@ static void shell_help()
     uart_puts("cat       : print data of search file\n\r");
     uart_puts("malloc    : print malloc string\n\r");
     uart_puts("fdt       : traverse device in rpi3\n\r");
+    uart_puts("exc       : call exception\n\r");
 }
 
 void shell_exec()
@@ -137,6 +134,10 @@ void shell_exec()
     else if(strcmp(buffer, "fdt") == 0)
     {
         fdt_traversal(fdt_print_name_cb);
+    }
+    else if(strcmp(buffer, "exc") == 0)
+    {
+        exc_set();
     }
     else if(strlen(buffer) == MAX_BUFFER_SIZE)
     {

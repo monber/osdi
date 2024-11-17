@@ -27,6 +27,7 @@
 
 #include "gpio.h"
 #include "mbox.h"
+#include "string.h"
 
 /* Auxilary mini UART registers */
 #define AUX_ENABLE      ((volatile unsigned int*)(MMIO_BASE+0x00215004))
@@ -55,6 +56,7 @@ void uart_init(int uart_mode);
 void uart_send(unsigned int c);
 char uart_getc();
 void uart_puts(char *s);
+void uart_put_hex(unsigned long int hex);
 
 typedef enum uart_mode
 {

@@ -159,3 +159,10 @@ void uart_puts(char *s) {
         uart_send(*s++);
     }
 }
+
+void uart_put_hex(unsigned long int hex)
+{
+    char s[MAX_BUFFER_SIZE];
+    int2hex(hex, s);
+    uart_puts(s);
+}
