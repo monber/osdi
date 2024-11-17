@@ -1,0 +1,13 @@
+{
+    "files.associations": {
+        "shell.h": "c",
+        "string.h": "c",
+        "uart.h": "c",
+        "cpio.h": "c",
+        "malloc.h": "c",
+        "array": "c",
+        "string_view": "c",
+        "initializer_list": "c",
+        "utility": "c"
+    }
+}
