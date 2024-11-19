@@ -6,6 +6,7 @@
 #include "malloc.h"
 #include "fdt.h"
 #include "exc.h"
+#include "timer.h"
 
 void shell_exec();
 void shell_input(char *str);

@@ -82,6 +82,12 @@ invalid_entry_hlr:
     exc_load_reg
     eret
 
+irq_hlr:
+    exc_save_reg
+    bl irq_hlr2
+    exc_load_reg
+    eret
+
 .macro  ventry  label
     b   \label // branch to a handler function.
     .align  7  // entry size is 0x80, .align will pad 0
@@ -97,7 +103,7 @@ exception_table:
     ventry invalid_entry_hlr
 
     ventry exc_hlr
-    ventry invalid_entry_hlr
+    ventry irq_hlr
     ventry invalid_entry_hlr
     ventry invalid_entry_hlr
 

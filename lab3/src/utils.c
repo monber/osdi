@@ -2,8 +2,14 @@
 
 void set_reg(long addr, unsigned int value)
 {
-    volatile unsigned int* point = (unsigned int*)addr;
+    volatile unsigned int* point = (volatile unsigned int*)addr;
     *point = value;
+}
+
+unsigned int read_reg(long addr)
+{
+    volatile unsigned int* point = (volatile unsigned int*)addr;
+    return *point;
 }
 
 void reset(int tick)

@@ -22,8 +22,8 @@ static void shell_print_mbox_info()
 
 static void shell_print_timestamp()
 {
-    unsigned long int timer_count = 1;
-    unsigned long int timer_frequency = 3;
+    unsigned long int timer_count = 0;
+    unsigned long int timer_frequency = 0;
     asm("mrs %0, CNTFRQ_EL0" : "=r" (timer_frequency));
     asm("mrs %0, CNTPCT_EL0" : "=r" (timer_count));
     float time = (float)timer_count / timer_frequency;
@@ -86,6 +86,23 @@ static void shell_help()
     uart_puts("malloc    : print malloc string\n\r");
     uart_puts("fdt       : traverse device in rpi3\n\r");
     uart_puts("exc       : call exception\n\r");
+    uart_puts("irq       : enable timer\n\r");
+
+}
+
+static void shell_toggle_timer()
+{
+    timer_enable ^= 1;
+    if(timer_enable)
+    {
+        //local_timer_enable();
+        core0_timer_enable();
+    }
+    else
+    {
+        //local_timer_disable();
+        core0_timer_disable();
+    }
 }
 
 void shell_exec()
@@ -138,6 +155,10 @@ void shell_exec()
     else if(strcmp(buffer, "exc") == 0)
     {
         exc_set();
+    }
+    else if(strcmp(buffer, "irq") == 0)
+    {
+        shell_toggle_timer();
     }
     else if(strlen(buffer) == MAX_BUFFER_SIZE)
     {

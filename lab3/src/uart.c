@@ -166,3 +166,10 @@ void uart_put_hex(unsigned long int hex)
     int2hex(hex, s);
     uart_puts(s);
 }
+
+void uart_put_int(int x)
+{
+    char s[MAX_BUFFER_SIZE];
+    itoa(x, s);
+    uart_puts(s);
+}

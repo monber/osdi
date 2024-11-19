@@ -57,6 +57,7 @@ void uart_send(unsigned int c);
 char uart_getc();
 void uart_puts(char *s);
 void uart_put_hex(unsigned long int hex);
+void uart_put_int(int x);
 
 typedef enum uart_mode
 {

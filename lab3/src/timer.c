@@ -1,0 +1,71 @@
+#include "timer.h"
+
+bool timer_enable = FALSE;
+
+static unsigned int local_timer_count = 0;
+static unsigned int core_timer_count = 0;
+
+void local_timer_enable()
+{
+  unsigned int flag = 0x30000000; // enable timer and interrupt.
+  unsigned int reload = 50000000;
+  set_reg(LOCAL_TIMER_CONTROL_REG, flag | reload);
+  uart_puts("enable local timer\n\r");
+}
+
+void local_timer_disable()
+{
+  // disable timer and interrupt.
+  set_reg(LOCAL_TIMER_CONTROL_REG, 0);
+  uart_puts("disable local timer\n\r");
+}
+
+void local_timer_handler()
+{
+  set_reg(LOCAL_TIMER_IRQ_CLR, 0xc0000000); // clear interrupt and reload.
+  local_timer_count++;
+  uart_puts("local timer interrupt: ");
+  uart_put_int(local_timer_count);
+  uart_puts("\n\r");
+}
+
+void core0_timer_enable()
+{
+  // enable timer
+  unsigned long int cntp_ctl_el0 = 0;
+  asm volatile("mrs %0, cntp_ctl_el0" : "=r" (cntp_ctl_el0));
+  cntp_ctl_el0 |= 1;
+  asm volatile("msr cntp_ctl_el0, %0" : "=r" (cntp_ctl_el0));
+  //set expired time
+  unsigned long int cntp_tval_el0 = CORE0_TIMER_EXPIRE_PERIOD;
+  asm volatile("msr cntp_tval_el0, %0" : "=r" (cntp_tval_el0));
+  //enable timer interrupt
+  unsigned int core0_timer_irq_ctrl = read_reg(CORE0_TIMER_IRQ_CTRL);
+  core0_timer_irq_ctrl |= 2;
+  set_reg(CORE0_TIMER_IRQ_CTRL, core0_timer_irq_ctrl);
+  uart_puts("enable core timer\n\r");
+}
+
+void core0_timer_disable()
+{
+  // enable timer
+  unsigned long int cntp_ctl_el0 = 0;
+  asm volatile("mrs %0, cntp_ctl_el0" : "=r" (cntp_ctl_el0));
+  cntp_ctl_el0 &= ~1;
+  asm volatile("msr cntp_ctl_el0, %0" : "=r" (cntp_ctl_el0));
+  //enable timer interrupt
+  unsigned int core0_timer_irq_ctrl = read_reg(CORE0_TIMER_IRQ_CTRL);
+  core0_timer_irq_ctrl &= ~2;
+  set_reg(CORE0_TIMER_IRQ_CTRL, core0_timer_irq_ctrl);
+  uart_puts("disable core timer\n\r");
+}
+
+void core0_timer_handler()
+{
+  unsigned long int cntp_tval_el0 = CORE0_TIMER_EXPIRE_PERIOD;
+  asm("msr cntp_tval_el0, %0" : "=r" (cntp_tval_el0));
+  core_timer_count++;
+  uart_puts("core timer interrupt: ");
+  uart_put_int(core_timer_count);
+  uart_puts("\n\r");
+}

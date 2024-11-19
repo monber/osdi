@@ -7,9 +7,14 @@
 
 #define MAX_BUFFER_SIZE 128
 #define NULL ((void *)0)
+#define TRUE 1
+#define FALSE 0
+
+typedef     char    bool;
 
 // reboot api
 void set_reg(long addr, unsigned int value);
+unsigned int read_reg(long addr);
 void reset(int tick);
 void cancel_reset();
 
