@@ -24,6 +24,7 @@
  */
 #include "uart.h"
 int uart_mode = MINI_UART;
+
 /**
  * Set baud rate and characteristics (115200 8N1) and map to GPIO
  */
@@ -81,8 +82,12 @@ void uart_init(int uart_mode_)
         *PL011_ICR = 0x7FF;    // clear interrupts
         *PL011_IBRD = 0x2;
         *PL011_FBRD = 0xb;
-        *PL011_LCRH = 0x7 << 4;
+        *PL011_LCRH = 0x3 << 5;  //8bit disable fifo
         *PL011_CR = 0x301;
+        *IRQ_ENABLE_2 |= (1 << 25);   // enable uart interrupts
+        uart_buf_init(&uart_tx_buf);
+        uart_buf_init(&uart_rx_buf);
+        *PL011_IMSC |= 3 << 4;        // enable uart tx/rx interrupt
     }
 }
 
@@ -105,11 +110,15 @@ void uart_send(unsigned int c) {
         }
         case PL011:
         {
-            do
+            uart_buf_write(&uart_tx_buf, c);
+            if(!(*PL011_FR & 0x20))
             {
-                asm volatile("nop");
-            }while(*PL011_FR & 0x20);
-            *PL011_DR = c;
+                c = uart_buf_read(&uart_tx_buf);
+                if(c)
+                {
+                    *PL011_DR = c;
+                }
+            }
             break;
         }
     }
@@ -136,13 +145,20 @@ char uart_getc() {
         }
         case PL011:
         {
+            /*
             do
             {
                 asm volatile("nop");
             }while(*PL011_FR & 0x010);
+            */
             /* read it and return */
-            r=(char)(*PL011_DR);
+            //r=(char)(*PL011_DR);
             /* convert carriage return to newline */
+            while(uart_buf_is_empty(&uart_rx_buf))
+            {
+                asm volatile("nop");
+            }
+            r = uart_buf_read(&uart_rx_buf);
             break;
         }
     }
@@ -153,8 +169,10 @@ char uart_getc() {
 /**
  * Display a string
  */
-void uart_puts(char *s) {
-    while(*s) {
+void uart_puts(char *s)
+{
+    while(*s)
+    {
         /* convert newline to carriage return + newline */
         uart_send(*s++);
     }
@@ -173,3 +191,4 @@ void uart_put_int(int x)
     itoa(x, s);
     uart_puts(s);
 }
+

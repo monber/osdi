@@ -16,6 +16,10 @@ void irq_hlr2()
     {
         core0_timer_handler();
     }
+    if(irq_pending2 & (1 << 25))
+    {
+        uart_intr_hlr();
+    }
 }
 
 void irq_init()

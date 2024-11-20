@@ -5,12 +5,12 @@
 #define PM_RSTC 0x3F10001c
 #define PM_WDOG 0x3F100024
 
-#define MAX_BUFFER_SIZE 128
+#define MAX_BUFFER_SIZE 512
 #define NULL ((void *)0)
 #define TRUE 1
 #define FALSE 0
 
-typedef     char    bool;
+typedef unsigned char bool;
 
 // reboot api
 void set_reg(long addr, unsigned int value);

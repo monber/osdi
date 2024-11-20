@@ -4,7 +4,7 @@
 
 #define USE_PL011 0
 
-int main()
+int kernel_main()
 {
     uart_init(PL011);
     fdt_traversal(fdt_initramfs_cb);

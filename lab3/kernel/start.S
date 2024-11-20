@@ -58,7 +58,7 @@ _start:
     msr VBAR_EL2, x0
 
     // jump to C code, should not return
-5:  bl      main
+5:  bl      kernel_main
     // for failsafe, halt this core too
     b       1b
 

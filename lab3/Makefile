@@ -1,7 +1,8 @@
 #declare variable
 CC = aarch64-linux-gnu-gcc
-CFLAGS = -c -g -Wall -Iinclude -ffreestanding -nostdinc -nostdlib -nostartfiles
-SRCS = $(wildcard src/*.c)
+CFLAGS = -c -g -Wall -Iinclude -Iperipheral/include -ffreestanding -nostdinc -nostdlib -nostartfiles
+SRCS = $(wildcard src/*.c) \
+	   $(wildcard peripheral/src/*.c)
 OBJS = $(SRCS:.c=.o)
 K_SRCS = $(wildcard kernel/*.c)
 K_ASMS = $(wildcard kernel/*.S)
@@ -24,6 +25,7 @@ kernel/kernel8.img: $(OBJS) $(K_OBJS)
 clean:
 	rm -rf kernel/*.o
 	rm -rf src/*.o
+	rm -rf peripheral/src/*.o
 	rm -rf kernel/kernel8.elf
 
 run:all

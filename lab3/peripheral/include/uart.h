@@ -28,6 +28,8 @@
 #include "gpio.h"
 #include "mbox.h"
 #include "string.h"
+#include "uart_irq.h"
+#include "irq.h"
 
 /* Auxilary mini UART registers */
 #define AUX_ENABLE      ((volatile unsigned int*)(MMIO_BASE+0x00215004))
@@ -50,6 +52,8 @@
 #define PL011_FBRD      ((volatile unsigned int*)(MMIO_BASE + 0x201028))
 #define PL011_LCRH      ((volatile unsigned int*)(MMIO_BASE + 0x20102c))
 #define PL011_CR        ((volatile unsigned int*)(MMIO_BASE + 0x201030))
+#define PL011_IMSC      ((volatile unsigned int*)(MMIO_BASE + 0x201038))
+#define PL011_RIS       ((volatile unsigned int*)(MMIO_BASE + 0x20103c))
 #define PL011_ICR       ((volatile unsigned int*)(MMIO_BASE + 0x201044))
 
 void uart_init(int uart_mode);
