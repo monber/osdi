@@ -20,20 +20,6 @@ static void shell_print_mbox_info()
     uart_puts("\n\r");
 }
 
-static void shell_print_timestamp()
-{
-    unsigned long int timer_count = 0;
-    unsigned long int timer_frequency = 0;
-    asm("mrs %0, CNTFRQ_EL0" : "=r" (timer_frequency));
-    asm("mrs %0, CNTPCT_EL0" : "=r" (timer_count));
-    float time = (float)timer_count / timer_frequency;
-    char buffer[MAX_BUFFER_SIZE];
-    ftoa(time, buffer);
-    uart_send('[');
-    uart_puts(buffer);
-    uart_puts("]\n\r");
-}
-
 static void shell_cat()
 {
     uart_puts("Filename: ");
@@ -90,21 +76,6 @@ static void shell_help()
 
 }
 
-static void shell_toggle_timer()
-{
-    timer_enable ^= 1;
-    if(timer_enable)
-    {
-        //local_timer_enable();
-        core0_timer_enable();
-    }
-    else
-    {
-        //local_timer_disable();
-        core0_timer_disable();
-    }
-}
-
 void shell_exec()
 {
     char buffer[MAX_BUFFER_SIZE];
@@ -134,7 +105,7 @@ void shell_exec()
     }
     else if(strcmp(buffer, "timestamp") == 0)
     {
-        shell_print_timestamp();
+        LAUNCH_SYS_CALL(ASM_SYS_CALL_TIMESTAMP);
     }
     else if (strcmp(buffer, "ls") == 0)
     {
@@ -154,11 +125,11 @@ void shell_exec()
     }
     else if(strcmp(buffer, "exc") == 0)
     {
-        exc_set();
+        LAUNCH_SYS_CALL(ASM_SYS_CALL_EXC);
     }
     else if(strcmp(buffer, "irq") == 0)
     {
-        shell_toggle_timer();
+        LAUNCH_SYS_CALL(ASM_SYS_CALL_TIMER);
     }
     else if(strlen(buffer) == MAX_BUFFER_SIZE)
     {

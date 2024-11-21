@@ -53,12 +53,15 @@ _start:
     sub     w2, w2, #1
     cbnz    w2, 3b
 
-    // load exception_table to VBAR_EL2
+    // load exception_table to VBAR_ELx
 4:  ldr x0, =exception_table
-    msr VBAR_EL2, x0
+    msr VBAR_EL1, x0
+
+5:  bl from_EL2_to_EL1
+    bl from_EL1_to_EL0
 
     // jump to C code, should not return
-5:  bl      kernel_main
+6:  bl      main
     // for failsafe, halt this core too
     b       1b
 

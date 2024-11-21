@@ -1,14 +1,13 @@
 #include "shell.h"
 #include "fdt.h"
 #include "irq.h"
+#include "syscall.h"
 
-#define USE_PL011 0
-
-int kernel_main()
+int main()
 {
     uart_init(PL011);
     fdt_traversal(fdt_initramfs_cb);
-    irq_init();
+    
     uart_puts("kernel init \n\r");
     while(1)
     {

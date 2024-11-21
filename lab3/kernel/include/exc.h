@@ -1,9 +1,10 @@
 #ifndef EXC_H_
 #define EXC_H_
 #include "uart.h"
+#include "timer.h"
+#include "syscall.h"
 
-//structure for ESR_EL2
-typedef union esr_el2
+typedef union esr_el
 {
     unsigned long int reg;
     struct
@@ -14,10 +15,10 @@ typedef union esr_el2
         unsigned long int ISS2 : 5;
         unsigned long int RSVD : 27;
     };
-}ESR_EL2;
+}ESR_EL;
 
-void exc_print_info();
-void exc_set();
+void exc_print_reg_info();
 void exc_invalid_entry();
+void exc_entry();
 
 #endif

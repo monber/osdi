@@ -1,29 +1,29 @@
 #declare variable
 CC = aarch64-linux-gnu-gcc
-CFLAGS = -c -g -Wall -Iinclude -Iperipheral/include -ffreestanding -nostdinc -nostdlib -nostartfiles
-SRCS = $(wildcard src/*.c) \
-	   $(wildcard peripheral/src/*.c)
+CFLAGS = -c -g -Wall -ffreestanding -nostdinc -nostdlib -nostartfiles
+INCLUDE_FLAGS = -Iinclude -Iperipheral/include -Ikernel -Ikernel/include
+SRCS = $(wildcard src/*.c) $(wildcard peripheral/*/*.c) $(wildcard kernel/*.c) \
+       $(wildcard kernel/*/*.c)
+ASMS = $(wildcard kernel/*.S) $(wildcard kernel/*/*.S)
 OBJS = $(SRCS:.c=.o)
-K_SRCS = $(wildcard kernel/*.c)
-K_ASMS = $(wildcard kernel/*.S)
-K_OBJS = $(K_SRCS:.c=.o) \
-		 $(K_ASMS:.S=.o)
+
+OBJS = $(SRCS:.c=.o) $(ASMS:.S=.o)
 
 all: clean kernel/kernel8.img
 #all: clean imgloader/kernel8.img
 
-kernel/kernel8.img: $(OBJS) $(K_OBJS)
-	aarch64-linux-gnu-ld -T kernel/link.ld $(OBJS) $(K_OBJS) -o kernel/kernel8.elf
+kernel/kernel8.img: $(OBJS)
+	aarch64-linux-gnu-ld -T kernel/link.ld $(OBJS) -o kernel/kernel8.elf
 	aarch64-linux-gnu-objcopy -O binary kernel/kernel8.elf kernel/kernel8.img
 
 %.o: %.c
-	$(CC) $(CFLAGS) $< -o $@
+	$(CC) $(CFLAGS) $(INCLUDE_FLAGS) $< -o $@
 
 %.o: %.S
-	$(CC) $(CFLAGS) $< -o $@ 
+	$(CC) $(CFLAGS) $(INCLUDE_FLAGS) $< -o $@ 
 
 clean:
-	rm -rf kernel/*.o
+	rm -rf kernel/*.o kernel/*/*.o
 	rm -rf src/*.o
 	rm -rf peripheral/src/*.o
 	rm -rf kernel/kernel8.elf

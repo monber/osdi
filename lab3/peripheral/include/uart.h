@@ -56,6 +56,12 @@
 #define PL011_RIS       ((volatile unsigned int*)(MMIO_BASE + 0x20103c))
 #define PL011_ICR       ((volatile unsigned int*)(MMIO_BASE + 0x201044))
 
+/* PL011 interrupt status */
+#define PL011_TX_INTR_CLEAR     (1 << 5)
+#define PL011_RX_INTR_CLEAR     (1 << 4)
+#define PL011_TX_INTR_STATUS    (1 << 5)
+#define PL011_RX_INTR_STATUS    (1 << 4)
+
 void uart_init(int uart_mode);
 void uart_send(unsigned int c);
 char uart_getc();

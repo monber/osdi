@@ -1,9 +1,9 @@
-# osdi lab2
+# osdi lab3
 ## description
-https://hackmd.io/en5VlMjnSSCwzoW57-y6jg
-## Run bootloader on Qemu
+https://hackmd.io/uYcuhxm6Rii3KzGh_AYqoQ
+## Run shell code on Qemu with gdb
 ```
-make load
+make gdb
 ```
 ## Run shell code on Qemu
 ```

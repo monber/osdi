@@ -15,7 +15,7 @@ void local_timer_handler();
 void core0_timer_enable();
 void core0_timer_disable();
 void core0_timer_handler();
-
-extern bool timer_enable;
+void timer_toggle();
+void timer_print_timestamp();
 
 #endif

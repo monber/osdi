@@ -69,3 +69,32 @@ void core0_timer_handler()
   uart_put_int(core_timer_count);
   uart_puts("\n\r");
 }
+
+void timer_toggle()
+{
+    timer_enable ^= 1;
+    if(timer_enable)
+    {
+        //local_timer_enable();
+        core0_timer_enable();
+    }
+    else
+    {
+        //local_timer_disable();
+        core0_timer_disable();
+    }
+}
+
+void timer_print_timestamp()
+{
+  unsigned long int timer_count = 0;
+  unsigned long int timer_frequency = 0;
+  asm("mrs %0, CNTFRQ_EL0" : "=r" (timer_frequency));
+  asm("mrs %0, CNTPCT_EL0" : "=r" (timer_count));
+  float time = (float)timer_count / timer_frequency;
+  char buffer[MAX_BUFFER_SIZE];
+  ftoa(time, buffer);
+  uart_send('[');
+  uart_puts(buffer);
+  uart_puts("]\n\r");
+}
