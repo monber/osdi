@@ -64,7 +64,7 @@ void fdt_traversal(fdt_callback cb)
     FDT_HEADER *fdt = (FDT_HEADER *)_fdt_ptr;
     if(fdt32_be((void *)&fdt->magic) != FDT_MAGIC_WORD)
     {
-        uart_puts("Warn: read abnormal fdt magic word\n\r");
+        uart_printf("Warn: read abnormal fdt magic word\n\r");
         return ;
     }
     char *ptr = ((char *)fdt + fdt32_be(&fdt->off_dt_struct));
@@ -100,6 +100,5 @@ void fdt_print_name_cb(FDT_HEADER *fdt, char *ptr, unsigned int token)
     {
         return ;
     }
-    uart_puts(ptr + 4);
-    uart_puts("\n\r");
+    uart_printf("%s\n\r", ptr + 4);
 }

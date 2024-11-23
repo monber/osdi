@@ -137,9 +137,7 @@ void int2hex(unsigned long int val, char *str)
         val /= 16;
         i++;
     }while(val > 0);
-    str[i] = 'x';
-    str[i + 1] = '0';
-    str[i + 2] = '\0';
+    str[i] = '\0';
     reversestr(str);
 }
 

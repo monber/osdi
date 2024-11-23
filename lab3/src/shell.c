@@ -7,37 +7,25 @@ static void shell_print_mbox_info()
     unsigned int mem_size = 0;
     mbox_get_board_revision(&board_revision);
     mbox_get_arm_memory_info(&mem_base_adr, &mem_size);
-    uart_puts("board revision: ");
-    uart_put_hex(board_revision);
-    uart_puts("\n\r");
-    //
-    uart_puts("memory base address: ");
-    uart_put_hex(mem_base_adr);
-    uart_puts("\n\r");
-    //
-    uart_puts("memory size: ");
-    uart_put_hex(mem_size);
-    uart_puts("\n\r");
+    uart_printf("board revision:0x%x\n\r", board_revision);
+    uart_printf("memory base address:0x%x\n\r", mem_base_adr);
+    uart_printf("memory size:0x%x\n\r", mem_size);
 }
 
 static void shell_cat()
 {
-    uart_puts("Filename: ");
+    uart_printf("Filename: ");
     char filename[MAX_BUFFER_SIZE];
     strset(filename, 0, MAX_BUFFER_SIZE);
     shell_input(filename);
     char *filedata = (char *)cpio_get_file(filename);
     if(filedata)
     {
-        uart_puts(filedata);
-        uart_puts("\n\r");
+        uart_printf("%s\n\r", filedata);
     }
     else
     {
-        uart_puts("\n\r");
-        uart_puts("cannnot find ");
-        uart_puts(filename);
-        uart_puts("\n\r");
+        uart_printf("cannnot find %s\n\r", filename);
     }
 }
 
@@ -55,24 +43,22 @@ static void shell_malloc()
         str2[i] = 'a' + i;
     }
     str2[5] = '\0';
-    uart_puts(str);
-    uart_puts("\n\r");
-    uart_puts(str2);
-    uart_puts("\n\r");
+    uart_printf("%s\n\r", str);
+    uart_printf("%s\n\r", str2);
 }
 
 static void shell_help()
 {
-    uart_puts("hello     : print Hello World\n\r");
-    uart_puts("mailbox   : print info related to gpu\n\r");
-    uart_puts("reboot    : reboot the device\n\r");
-    uart_puts("timestamp : print timestamp in cpu\n\r");
-    uart_puts("ls        : print files in rpi3\n\r");
-    uart_puts("cat       : print data of search file\n\r");
-    uart_puts("malloc    : print malloc string\n\r");
-    uart_puts("fdt       : traverse device in rpi3\n\r");
-    uart_puts("exc       : call exception\n\r");
-    uart_puts("irq       : enable timer\n\r");
+    uart_printf("hello     : print Hello World\n\r");
+    uart_printf("mailbox   : print info related to gpu\n\r");
+    uart_printf("reboot    : reboot the device\n\r");
+    uart_printf("timestamp : print timestamp in cpu\n\r");
+    uart_printf("ls        : print files in rpi3\n\r");
+    uart_printf("cat       : print data of search file\n\r");
+    uart_printf("malloc    : print malloc string\n\r");
+    uart_printf("fdt       : traverse device in rpi3\n\r");
+    uart_printf("exc       : call exception\n\r");
+    uart_printf("irq       : enable timer\n\r");
 
 }
 
@@ -82,7 +68,7 @@ void shell_exec()
     strset(buffer, 0, MAX_BUFFER_SIZE);
 
     //input cmd into shell
-    uart_puts("# ");
+    uart_printf("# ");
     shell_input(buffer);
 
     //output result
@@ -92,7 +78,7 @@ void shell_exec()
     }
     else if(strcmp(buffer, "hello") == 0)
     {
-        uart_puts("Hello World\n\r");
+        uart_printf("Hello World\n\r");
     }
     else if(strcmp(buffer, "mailbox") == 0)
     {
@@ -100,7 +86,7 @@ void shell_exec()
     }
     else if(strcmp(buffer, "reboot") == 0)
     {
-        uart_puts("cpu reboot...\n\r");
+        uart_printf("cpu reboot...\n\r");
         reset(1000);
     }
     else if(strcmp(buffer, "timestamp") == 0)
@@ -133,15 +119,13 @@ void shell_exec()
     }
     else if(strlen(buffer) == MAX_BUFFER_SIZE)
     {
-        uart_puts("\n\r");
-        uart_puts("Cmd is too long to process.\n\r");
-        uart_puts("Maximum input length is 128\n\r");
+        uart_printf("\n\r");
+        uart_printf("Cmd is too long to process.\n\r");
+        uart_printf("Maximum input length is 128\n\r");
     }
     else
     {
-        uart_puts("Error, command ");
-        uart_puts(buffer);
-        uart_puts(" not found. Please try <help>\n\r");
+        uart_printf("Error, command %s not found. Please try <help>\n\r", buffer);
     }
 }
 

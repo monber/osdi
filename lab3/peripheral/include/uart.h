@@ -30,6 +30,7 @@
 #include "string.h"
 #include "uart_irq.h"
 #include "irq.h"
+#include "sprintf.h"
 
 /* Auxilary mini UART registers */
 #define AUX_ENABLE      ((volatile unsigned int*)(MMIO_BASE+0x00215004))
@@ -68,6 +69,7 @@ char uart_getc();
 void uart_puts(char *s);
 void uart_put_hex(unsigned long int hex);
 void uart_put_int(int x);
+void uart_printf(char *s, ...);
 
 typedef enum uart_mode
 {
