@@ -62,8 +62,11 @@ void core0_timer_handler()
 {
   unsigned long int cntp_tval_el0 = CORE0_TIMER_EXPIRE_PERIOD;
   asm("msr cntp_tval_el0, %0" : "=r" (cntp_tval_el0));
+  /*
   core_timer_count++;
   uart_printf("core timer interrupt: %d\n\r", core_timer_count);
+  */
+  task_timer_tick();
 }
 
 void timer_toggle()

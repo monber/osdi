@@ -2,11 +2,15 @@
 #define TASK_H_
 
 #include "uart.h"
+#include "define.h"
+#include "sched.h"
 
-#define TASK_POOL_NUM   10
+#define TASK_POOL_NUM       10
 #define TASK_INVALID_ID     TASK_POOL_NUM
+#define TASK_IDLE_ID        0
 #define KERNEL_STACK_SIZE   4096
 #define KERNEL_STACK_BASE   0x30000
+#define TASK_COUNTER_NUM    5
 
 typedef struct cpu_context
 {
@@ -28,8 +32,8 @@ typedef struct cpu_context
 
 enum task_state
 {
+    TASK_UNUSED,
     TASK_IDLE,
-    TASK_USED,
     TASK_RUNNING,
 };
 
@@ -37,6 +41,8 @@ typedef struct task_control_block
 {
     CPU_CONTEXT cpu_context;
     unsigned int state;
+    int priority;
+    int counter;
     //task_callback cb;
 }TASK;
 
@@ -44,9 +50,13 @@ extern TASK task_pool[TASK_POOL_NUM];
 
 typedef void(*task_callback)();
 
-int task_privilege_create(task_callback cb);
+int privilege_task_create(task_callback cb);
 void task_context_switch(TASK* next);
-extern TASK *task_get_current();
+void task_set_state(TASK *cur, int state);
+void task_idle();
+void task_pool_init();
+TASK *task_get_current();
+
 extern void task_switch_to(TASK * pre, TASK *next);
 extern void task_run(TASK *task);
 

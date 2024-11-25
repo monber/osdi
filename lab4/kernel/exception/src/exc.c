@@ -65,3 +65,10 @@ void exc_invalid_entry()
     uart_puts("Warn: enter invalid entry\n\r");
     exc_print_reg_info();
 }
+
+void exc_get_currentEL()
+{
+    unsigned long int currentEL;
+    asm volatile("mrs %0, currentEL" : "=r" (currentEL));
+    uart_printf("currentEL:%d\n\r", ((currentEL & 0xc) >> 2));
+}

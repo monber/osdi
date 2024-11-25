@@ -20,5 +20,6 @@ typedef union esr_el
 void exc_print_reg_info();
 void exc_invalid_entry();
 void exc_entry();
+void exc_get_currentEL();
 
 #endif

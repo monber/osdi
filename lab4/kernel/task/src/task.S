@@ -33,8 +33,3 @@ task_run:
     msr tpidr_el1, x0
     ret
 
-.global task_get_current
-task_get_current:
-    mrs x0, tpidr_el1
-    ret
-

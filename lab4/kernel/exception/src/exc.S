@@ -1,7 +1,7 @@
 .section   .text
 
 .macro exc_save_reg
-    sub sp, sp, 32 * 8
+    sub sp, sp, 32 * 9
     stp x0, x1, [sp ,16 * 0]
     stp x2, x3, [sp ,16 * 1]
     stp x4, x5, [sp ,16 * 2]
@@ -17,10 +17,19 @@
     stp x24, x25, [sp ,16 * 12]
     stp x26, x27, [sp ,16 * 13]
     stp x28, x29, [sp ,16 * 14]
-    str x30, [sp, 16 * 15]
+
+    mrs x0, spsr_el1
+    stp x30, x0, [sp, 16 * 15]
+    mrs x0, elr_el1
+    str x0, [sp, 16 * 16]
 .endm
 
 .macro exc_load_reg
+    ldp x30, x0, [sp, 16 * 15]
+    msr spsr_el1, x0
+    ldr x0, [sp, 16 * 16]
+    msr elr_el1, x0
+
     ldp x0, x1, [sp ,16 * 0]
     ldp x2, x3, [sp ,16 * 1]
     ldp x4, x5, [sp ,16 * 2]
@@ -36,8 +45,7 @@
     ldp x24, x25, [sp ,16 * 12]
     ldp x26, x27, [sp ,16 * 13]
     ldp x28, x29, [sp ,16 * 14]
-    ldr x30, [sp, 16 * 15]
-    add sp, sp, 32 * 8
+    add sp, sp, 32 * 9
 .endm
 
 exc_hlr:
@@ -69,7 +77,7 @@ from_EL2_to_EL1:
     mov x0, (1 << 31)
     msr HCR_EL2, x0 
     //set interrupt mask, EL and sp
-    mov x0, 0x3c5
+    mov x0, 0x5
     msr spsr_el2, x0
     //set return address
     msr elr_el2, lr

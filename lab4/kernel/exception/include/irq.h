@@ -15,4 +15,7 @@
 void irq_entry();
 void irq_el2_init();
 
+extern void irq_enable();
+extern void irq_disable();
+
 #endif

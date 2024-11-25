@@ -3,11 +3,12 @@
 
 #include "utils.h"
 #include "uart.h"
+#include "sched.h"
 
 #define LOCAL_TIMER_CONTROL_REG 0x40000034
 #define LOCAL_TIMER_IRQ_CLR 0x40000038
 #define CORE0_TIMER_IRQ_CTRL 0x40000040
-#define CORE0_TIMER_EXPIRE_PERIOD 0xffffff
+#define CORE0_TIMER_EXPIRE_PERIOD 0xfffff
 
 void local_timer_enable();
 void local_timer_disable();

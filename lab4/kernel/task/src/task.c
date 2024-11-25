@@ -3,36 +3,30 @@
 TASK task_pool[TASK_POOL_NUM];
 //char kstack_pool[TASK_POOL_NUM][KERNEL_STACK_SIZE];
 
-void task_poll_init()
+void task_pool_init()
 {
-    for(int i = 0; i < TASK_POOL_NUM; i++)
+    //kernel_main
+    task_pool[0].state = TASK_RUNNING;
+    task_pool[0].priority = 0;
+    task_pool[0].counter = TASK_COUNTER_NUM;
+    task_queue_insert(&runq, TASK_IDLE_ID);
+    unsigned long int idle_task_adr = (unsigned long int)(&task_pool[0]);
+    asm volatile("msr tpidr_el1, %0" : "=r" (idle_task_adr));
+    //other
+    for(int i = 1; i < TASK_POOL_NUM; i++)
     {
-        task_pool[i].state = TASK_IDLE;
-        task_pool[i].cpu_context.fp = 0;
-        task_pool[i].cpu_context.lr = 0;
-        task_pool[i].cpu_context.pc = 0;
-        task_pool[i].cpu_context.sp = 0;
-        task_pool[i].cpu_context.x19 = 0;
-        task_pool[i].cpu_context.x20 = 0;
-        task_pool[i].cpu_context.x21 = 0;
-        task_pool[i].cpu_context.x22 = 0;
-        task_pool[i].cpu_context.x23 = 0;
-        task_pool[i].cpu_context.x24 = 0;
-        task_pool[i].cpu_context.x25 = 0;
-        task_pool[i].cpu_context.x26 = 0;
-        task_pool[i].cpu_context.x27 = 0;
-        task_pool[i].cpu_context.x28 = 0;
+        task_pool[i].state = TASK_UNUSED;
     }
 }
 
-int task_privilege_create(task_callback cb)
+int privilege_task_create(task_callback cb)
 {
-    int id = 0;
+    int id = 1;
     while(id < TASK_POOL_NUM)
     {
-        if(task_pool[id].state == TASK_IDLE)
+        if(task_pool[id].state == TASK_UNUSED)
         {
-            task_pool[id].state = TASK_USED;
+            task_pool[id].state = TASK_IDLE;
             break;
         }
         id++;
@@ -46,13 +40,47 @@ int task_privilege_create(task_callback cb)
     task_pool[id].cpu_context.lr = (unsigned long int)cb;
     task_pool[id].cpu_context.fp = (unsigned long int)(KERNEL_STACK_BASE - id * KERNEL_STACK_SIZE);
     task_pool[id].cpu_context.sp = (unsigned long int)(KERNEL_STACK_BASE - id * KERNEL_STACK_SIZE);
-    //uart_printf("sp:0x%x\n\r", task_pool[id].cpu_context.sp);
-    //uart_printf("create privilege task:%d success\n\r", id);
+    task_pool[id].state = TASK_RUNNING;
+    task_pool[id].priority = 1;
+    task_pool[id].counter = TASK_COUNTER_NUM;
+    task_queue_insert(&runq, id);
     return id;
 }
 
 void task_context_switch(TASK* next)
 {
     TASK *prev = task_get_current();
+    if(prev == next)
+    {
+        return;
+    }
     task_switch_to(prev, next);
+}
+
+void task_set_state(TASK *cur, int state)
+{
+    cur->state = state;
+}
+
+void task_idle()
+{
+    int count = DELAY_COUNTER;
+    while(1)
+    {
+        count--;
+        if(count == 0)
+        {
+            count = DELAY_COUNTER;
+            uart_printf("in idle task\n\r");
+            task_schedule();
+        }
+    }
+}
+
+TASK *task_get_current()
+{
+    unsigned long int ptr;
+    asm volatile("mrs %0, tpidr_el1" : "=r" (ptr));
+
+    return (TASK *)ptr;
 }

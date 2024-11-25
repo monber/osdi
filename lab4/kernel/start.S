@@ -64,9 +64,6 @@ _start:
     mrs x0, CPACR_EL1
     orr x0, x0, #(3 << 20)
     msr CPACR_EL1, x0
-    //disable interrupt in EL1
-    mov x0, 0x3c5
-    msr spsr_el1, x0
 
     // jump to C code, should not return
 6:  bl      kernel_main
