@@ -5,10 +5,10 @@
 
 int main()
 {
-    uart_init(PL011);
+    //uart_init(MINI_UART);
     fdt_traversal(fdt_initramfs_cb);
     
-    uart_printf("kernel init \n\r");
+    //uart_printf("kernel init \n\r");
     while(1)
     {
         shell_exec();

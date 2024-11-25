@@ -57,11 +57,19 @@ _start:
 4:  ldr x0, =exception_table
     msr VBAR_EL1, x0
 
+    //switch to EL1 and set related reg
 5:  bl from_EL2_to_EL1
-    bl from_EL1_to_EL0
+    //bl from_EL1_to_EL0
+    //set CPACR_EL1.FPEN for floating point problem
+    mrs x0, CPACR_EL1
+    orr x0, x0, #(3 << 20)
+    msr CPACR_EL1, x0
+    //disable interrupt in EL1
+    mov x0, 0x3c5
+    msr spsr_el1, x0
 
     // jump to C code, should not return
-6:  bl      main
+6:  bl      kernel_main
     // for failsafe, halt this core too
     b       1b
 
