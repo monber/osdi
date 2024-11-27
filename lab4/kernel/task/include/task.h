@@ -10,7 +10,18 @@
 #define TASK_IDLE_ID        0
 #define KERNEL_STACK_SIZE   4096
 #define KERNEL_STACK_BASE   0x30000
+#define USER_STACK_SIZE     4096
+#define USER_STACK_BASE     0x20000
 #define TASK_COUNTER_NUM    5
+
+//PSR
+#define PSR_MODE_EL0t	0x00000000
+#define PSR_MODE_EL1t	0x00000004
+#define PSR_MODE_EL1h	0x00000005
+#define PSR_MODE_EL2t	0x00000008
+#define PSR_MODE_EL2h	0x00000009
+#define PSR_MODE_EL3t	0x0000000c
+#define PSR_MODE_EL3h	0x0000000d
 
 typedef struct cpu_context
 {
@@ -27,7 +38,6 @@ typedef struct cpu_context
     unsigned long int fp;
     unsigned long int lr;
     unsigned long int sp;
-    unsigned long int pc;
 }CPU_CONTEXT;
 
 enum task_state
@@ -37,12 +47,24 @@ enum task_state
     TASK_RUNNING,
 };
 
+typedef struct pt_regs {
+	unsigned long regs[31];
+	unsigned long lr;
+	unsigned long pstate;
+    unsigned long sp;
+}PT_REGS;
+
+#define PT_REGS_SIZE sizeof(PT_REGS)
+
 typedef struct task_control_block
 {
     CPU_CONTEXT cpu_context;
+    unsigned long int kpc;
     unsigned int state;
     int priority;
     int counter;
+    int id;
+    bool resched;
     //task_callback cb;
 }TASK;
 
@@ -56,9 +78,13 @@ void task_set_state(TASK *cur, int state);
 void task_idle();
 void task_pool_init();
 TASK *task_get_current();
+void task_move_to_user_mode(int id, task_callback cb);
+void do_exec(task_callback cb);
+void task_resched();
 
 extern void task_switch_to(TASK * pre, TASK *next);
 extern void task_run(TASK *task);
+extern void task_ret_from_fork();
 
 #endif
 

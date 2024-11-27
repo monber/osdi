@@ -1,6 +1,6 @@
 .section   .text
 
-.macro exc_save_reg
+.macro kernel_entry
     sub sp, sp, 32 * 9
     stp x0, x1, [sp ,16 * 0]
     stp x2, x3, [sp ,16 * 1]
@@ -18,17 +18,19 @@
     stp x26, x27, [sp ,16 * 13]
     stp x28, x29, [sp ,16 * 14]
 
-    mrs x0, spsr_el1
-    stp x30, x0, [sp, 16 * 15]
     mrs x0, elr_el1
-    str x0, [sp, 16 * 16]
+    stp x30, x0, [sp, 16 * 15]
+    mrs x0, spsr_el1
+    mrs x1, SP_EL0
+    stp x0, x1, [sp ,16 * 16]
 .endm
 
-.macro exc_load_reg
-    ldp x30, x0, [sp, 16 * 15]
-    msr spsr_el1, x0
-    ldr x0, [sp, 16 * 16]
+.macro kernel_exit
+    ldp x30, x0, [sp ,16 * 15]
     msr elr_el1, x0
+    ldp x0, x1, [sp ,16 * 16]
+    msr spsr_el1, x0
+    msr SP_EL0, x1
 
     ldp x0, x1, [sp ,16 * 0]
     ldp x2, x3, [sp ,16 * 1]
@@ -46,25 +48,35 @@
     ldp x26, x27, [sp ,16 * 13]
     ldp x28, x29, [sp ,16 * 14]
     add sp, sp, 32 * 9
+    eret
 .endm
 
-exc_hlr:
-    exc_save_reg
+exc_hlr_EL1h:
+    kernel_entry
     bl exc_entry
-    exc_load_reg
-    eret
+    kernel_exit
+
+irq_hlr_EL1h:
+    kernel_entry
+    bl irq_entry
+    kernel_exit
+
+exc_hlr_EL064:
+    kernel_entry
+    bl exc_entry
+    bl task_resched
+    kernel_exit
+
+irq_hlr_EL064:
+    kernel_entry
+    bl irq_entry
+    bl task_resched
+    kernel_exit
 
 invalid_entry_hlr:
-    exc_save_reg
+    kernel_entry
     bl  exc_invalid_entry
-    exc_load_reg
-    eret
-
-irq_hlr:
-    exc_save_reg
-    bl irq_entry
-    exc_load_reg
-    eret
+    kernel_exit
 
 .macro  ventry  label
     b   \label // branch to a handler function.
@@ -111,13 +123,13 @@ exception_table:
     ventry invalid_entry_hlr
     ventry invalid_entry_hlr
 
-    ventry exc_hlr
-    ventry irq_hlr
+    ventry exc_hlr_EL1h
+    ventry irq_hlr_EL1h
     ventry invalid_entry_hlr
     ventry invalid_entry_hlr
 
-    ventry exc_hlr
-    ventry irq_hlr
+    ventry exc_hlr_EL064
+    ventry irq_hlr_EL064
     ventry invalid_entry_hlr
     ventry invalid_entry_hlr
 
@@ -125,3 +137,14 @@ exception_table:
     ventry invalid_entry_hlr
     ventry invalid_entry_hlr
     ventry invalid_entry_hlr
+
+.globl task_ret_from_fork
+task_ret_from_fork:
+    mrs x0, tpidr_el1
+    ldp x1, x2, [x0, #8 * 12]
+    cbz x2, task_ret_to_user
+    blr x2
+
+task_ret_to_user:
+    kernel_exit
+
