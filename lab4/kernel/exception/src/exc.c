@@ -9,8 +9,24 @@ void exc_entry()
     uart_put_hex(esr_el1.ISS);
     uart_puts("\n\r");
 #endif
-    switch(esr_el1.ISS)
+    if(esr_el1.EC == ESR_ELX_SVC64)
     {
+        exc_svc_handler(esr_el1.ISS);
+    }
+    else
+    {
+        uart_printf("Warn: unknown exception\n\r");
+        exc_print_reg_info();
+    }
+}
+
+static void exc_sys_call_hdr()
+{
+    TASK *cur = task_get_current();
+    PT_REGS *reg = task_get_pt_regs(cur->id);
+    switch(reg->regs[8])
+    {
+        /*
         case SYS_CALL_TIMESTAMP:
         {
             timer_print_timestamp();
@@ -34,13 +50,33 @@ void exc_entry()
             asm("msr spsr_el1, %0" : "=r" (spsr_el1));
             break;
         }
-        default:
+        */
+        case SYS_CALL_EXC:
         {
-            uart_puts("unknown svc_num ");
-            uart_put_hex(esr_el1.ISS);
-            uart_puts("\n\r");
-            exc_print_reg_info();
+            task_user_exec(cur->id, (task_callback)reg->regs[0]);
+            reg->regs[0] = 0;
+            break;
         }
+        case SYS_CALL_FORK:
+        {
+            TASK *cur = task_get_current();
+            int id = cur->id;
+            PT_REGS *reg = (PT_REGS *)(KERNEL_STACK_BASE - id * KERNEL_STACK_SIZE - PT_REGS_SIZE);
+            reg->regs[0] = (unsigned long int)task_fork();
+            break;
+        }
+    }
+}
+
+void exc_svc_handler(unsigned long int ISS)
+{
+    if(ISS == SYS_CALL)
+    {
+        exc_sys_call_hdr();
+    }
+    else
+    {
+        uart_printf("Warn: unknown svc_num:%d\n\r", ISS);
     }
 }
 

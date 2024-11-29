@@ -1,7 +1,7 @@
 #include "shell.h"
 #include "fdt.h"
 #include "irq.h"
-#include "syscall.h"
+#include "sys.h"
 
 int main()
 {

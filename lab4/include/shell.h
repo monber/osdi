@@ -7,7 +7,7 @@
 #include "fdt.h"
 #include "exc.h"
 #include "timer.h"
-#include "syscall.h"
+#include "sys.h"
 
 void shell_exec();
 void shell_input(char *str);

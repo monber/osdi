@@ -2,7 +2,10 @@
 #define EXC_H_
 #include "uart.h"
 #include "timer.h"
-#include "syscall.h"
+#include "sys.h"
+#include "task.h"
+
+#define ESR_ELX_SVC64 0x15
 
 typedef union esr_el
 {
@@ -20,6 +23,7 @@ typedef union esr_el
 void exc_print_reg_info();
 void exc_invalid_entry();
 void exc_entry();
+void exc_svc_handler(unsigned long int ISS);
 void exc_get_currentEL();
 
 #endif

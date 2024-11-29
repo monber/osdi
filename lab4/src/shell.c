@@ -91,7 +91,7 @@ void shell_exec()
     }
     else if(strcmp(buffer, "timestamp") == 0)
     {
-        LAUNCH_SYS_CALL(ASM_SYS_CALL_TIMESTAMP);
+        //LAUNCH_SYS_CALL(ASM_SYS_CALL_TIMESTAMP);
     }
     else if (strcmp(buffer, "ls") == 0)
     {
@@ -111,11 +111,11 @@ void shell_exec()
     }
     else if(strcmp(buffer, "exc") == 0)
     {
-        LAUNCH_SYS_CALL(ASM_SYS_CALL_EXC);
+        //LAUNCH_SYS_CALL(ASM_SYS_CALL_EXC);
     }
     else if(strcmp(buffer, "irq") == 0)
     {
-        LAUNCH_SYS_CALL(ASM_SYS_CALL_TIMER);
+        //LAUNCH_SYS_CALL(ASM_SYS_CALL_TIMER);
     }
     else if(strlen(buffer) == MAX_BUFFER_SIZE)
     {

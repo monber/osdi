@@ -78,9 +78,10 @@ void task_set_state(TASK *cur, int state);
 void task_idle();
 void task_pool_init();
 TASK *task_get_current();
-void task_move_to_user_mode(int id, task_callback cb);
-void do_exec(task_callback cb);
+void task_user_exec(int id, task_callback cb);
 void task_resched();
+int task_fork();
+PT_REGS *task_get_pt_regs(int id);
 
 extern void task_switch_to(TASK * pre, TASK *next);
 extern void task_run(TASK *task);

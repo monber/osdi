@@ -4,7 +4,7 @@ CFLAGS = -c -g -Wall -ffreestanding -nostdinc -nostdlib -nostartfiles
 INCLUDE_FLAGS = -Iinclude -Ikernel/include -Ikernel/peripheral/include -Ikernel/exception/include \
                 -Ikernel/task/include
 SRCS = $(wildcard src/*.c) $(wildcard kernel/*.c) $(wildcard kernel/*/*.c) $(wildcard kernel/*/*/*.c)
-ASMS = $(wildcard kernel/*.S) $(wildcard kernel/*/*/*.S)
+ASMS = $(wildcard kernel/*.S) $(wildcard kernel/*/*/*.S) $(wildcard src/*.S)
 OBJS = $(SRCS:.c=.o) $(ASMS:.S=.S.o)
 
 all: clean kernel8.img

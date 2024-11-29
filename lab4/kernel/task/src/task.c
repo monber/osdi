@@ -20,7 +20,7 @@ void task_pool_init()
     }
 }
 
-int privilege_task_create(task_callback cb)
+static int task_get_id()
 {
     int id = 1;
     while(id < TASK_POOL_NUM)
@@ -32,9 +32,14 @@ int privilege_task_create(task_callback cb)
         }
         id++;
     }
+    return id;
+}
+
+int privilege_task_create(task_callback cb)
+{
+    int id = task_get_id();
     if(id == TASK_INVALID_ID)
     {
-
         uart_printf("Warn: can't create privilege task\n\r");
         return TASK_INVALID_ID;
     }
@@ -51,7 +56,7 @@ int privilege_task_create(task_callback cb)
     return id;
 }
 
-void task_move_to_user_mode(int id, task_callback cb)
+void task_user_exec(int id, task_callback cb)
 {
     if(id == TASK_INVALID_ID)
     {
@@ -61,12 +66,6 @@ void task_move_to_user_mode(int id, task_callback cb)
     reg->sp = USER_STACK_BASE - id * USER_STACK_SIZE;
     reg->lr = (unsigned long int)cb;
     reg->pstate = PSR_MODE_EL0t;
-}
-
-void do_exec(task_callback cb)
-{
-    int id = privilege_task_create(NULL);
-    task_move_to_user_mode(id, cb);
 }
 
 void task_context_switch(TASK* next)
@@ -115,4 +114,51 @@ void task_resched()
         cur->resched = 0;
         task_schedule();
     }
+}
+
+int task_fork()
+{
+    TASK *parenttask = task_get_current();
+    int parentid = parenttask->id;
+    int childid = task_get_id();
+    if(childid == TASK_INVALID_ID)
+    {
+        uart_printf("Warn: can't create privilege task\n\r");
+        return -1;
+    }
+    TASK *childtask = &task_pool[childid];
+    childtask->cpu_context.lr = (unsigned long int)task_ret_from_fork;
+    childtask->cpu_context.fp = (unsigned long int)(KERNEL_STACK_BASE - childid * KERNEL_STACK_SIZE - PT_REGS_SIZE);
+    childtask->cpu_context.sp = childtask->cpu_context.fp;
+    //
+    childtask->kpc = (unsigned long int)NULL;
+    childtask->state = TASK_RUNNING;
+    childtask->priority = parenttask->priority;
+    childtask->counter = parenttask->counter;
+    childtask->id = childid;
+    childtask->resched = parenttask->resched;
+    task_queue_insert(&runq, childid);
+    //
+    PT_REGS *childreg = task_get_pt_regs(childid);
+    PT_REGS *parentreg = task_get_pt_regs(parentid);
+    childreg->regs[0] = 0;
+    childreg->regs[29] = parentreg->regs[29];
+    childreg->regs[30] = parentreg->regs[30];
+    task_user_exec(childid, (task_callback)parentreg->lr);
+    unsigned long int *childusp = (unsigned long int *)childreg->sp;
+    unsigned long int *parentusp = (unsigned long int *)parentreg->sp;
+    unsigned long int *parentsp_base = (unsigned long int *)(USER_STACK_BASE - parentid * USER_STACK_SIZE);
+    while(parentsp_base > parentusp)
+    {
+        *childusp = *parentsp_base;
+        childusp--;
+        parentsp_base--;
+    }
+    childreg->sp = (unsigned long int)childusp;
+    return childid;
+}
+
+PT_REGS *task_get_pt_regs(int id)
+{
+    return (PT_REGS *)(KERNEL_STACK_BASE - id * KERNEL_STACK_SIZE - PT_REGS_SIZE);;
 }
