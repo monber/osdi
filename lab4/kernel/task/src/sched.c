@@ -63,7 +63,7 @@ void task_timer_tick()
 {
     TASK *cur = task_get_current();
     cur->counter--;
-    if(cur->counter > 0)
+    if(cur->counter > 0 || !cur->preemption)
     {
         return ;
     }
@@ -71,4 +71,16 @@ void task_timer_tick()
     irq_enable();
     task_schedule();
     irq_disable();
+}
+
+void task_preemption_enable()
+{
+    TASK *cur = task_get_current();
+    cur->preemption = TRUE;
+}
+
+void task_preemption_disable()
+{
+    TASK *cur = task_get_current();
+    cur->preemption = FALSE;
 }

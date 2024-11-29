@@ -5,4 +5,6 @@
 
 int exec(void (*func));
 int fork();
+void exit(int status);
+int get_task_id();
 #endif

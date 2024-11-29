@@ -45,6 +45,7 @@ enum task_state
     TASK_UNUSED,
     TASK_IDLE,
     TASK_RUNNING,
+    TASK_ZOMBIE,
 };
 
 typedef struct pt_regs {
@@ -65,6 +66,7 @@ typedef struct task_control_block
     int counter;
     int id;
     bool resched;
+    bool preemption;
     //task_callback cb;
 }TASK;
 
@@ -82,6 +84,7 @@ void task_user_exec(int id, task_callback cb);
 void task_resched();
 int task_fork();
 PT_REGS *task_get_pt_regs(int id);
+void task_exit(int status);
 
 extern void task_switch_to(TASK * pre, TASK *next);
 extern void task_run(TASK *task);

@@ -3,82 +3,79 @@
 #include "timer.h"
 #include "sys.h"
 
-int id1 = TASK_INVALID_ID;
-int id2 = TASK_INVALID_ID;
-
-void user_process_2()
+void delay(unsigned long time)
 {
-    int count = DELAY_COUNTER;
-    while(1)
+    while(time > 0)
     {
-        count--;
-        asm("nop");
-        if(count == 0)
-        {
-            uart_printf("in user process 2\n\r");
-            count = DELAY_COUNTER;
-        }
+        asm ("nop");
+        time--;
     }
 }
 
-void user_process_1()
+void foo()
 {
-    int count = DELAY_COUNTER;
-    uart_printf("in user process 1, start fork\n\r");
-    int id = fork();
-    //exec(user_process_2);
-    while(1)
+  int tmp = 5;
+  uart_printf("Task %d after exec, tmp address 0x%x, tmp value %d\n", get_task_id(), &tmp, tmp);
+  exit(TASK_ZOMBIE);
+}
+
+void test() {
+    int cnt = 1;
+    if (fork() == 0)
     {
-        count--;
-        asm("nop");
-        if(count == 0)
+        fork();
+        delay(1000000);
+        fork();
+        while(cnt < 10)
         {
-            if(id == 0)
-            {
-                uart_printf("in fork user process\n\r");
-            }
-            else
-            {
-                uart_printf("in original user process:%d\n\r", id);
-            }
-            count = DELAY_COUNTER;
+            uart_printf("Task id: %d, cnt: %d\n", get_task_id(), cnt);
+            delay(1000000);
+            ++cnt;
         }
+        exit(TASK_ZOMBIE);
+        uart_printf("Should not be printed\n");
+    }
+    else
+    {
+        uart_printf("Task %d before exec, cnt address 0x%x, cnt value %d\n", get_task_id(), &cnt, cnt);
+        exec(foo);
     }
 }
 
-void kernel_process_1()
+void user_test()
 {
-    int count = DELAY_COUNTER;
-    uart_printf("in kernel process 1\n\r");
     TASK *cur = task_get_current();
-    task_user_exec(cur->id, user_process_1);
-    /*
-    while(1)
-    {
-        count--;
-        asm("nop");
-        if(count == 0)
-        {
-            uart_printf("in kernel process 1\n\r");
-            count = DELAY_COUNTER;
-        }
-    }
-    */
+    task_user_exec(cur->id, test);
 }
 
-void kernel_process_2()
+int num_runnable_tasks()
 {
-    int count = DELAY_COUNTER;
-    while(1)
+    task_preemption_disable();
+    int num_runnable_tasks = 0;
+    for (int i = 0; i < TASK_POOL_NUM; i++)
     {
-        count--;
-        asm("nop");
-        if(count == 0)
+        if(task_pool[i].state == TASK_RUNNING)
         {
-            uart_printf("in kernel process 2\n\r");
-            count = DELAY_COUNTER;
+            num_runnable_tasks++;
         }
     }
+    task_preemption_enable();
+    return num_runnable_tasks;
+}
+
+void idle()
+{
+    while(1)
+    {
+        if(num_runnable_tasks() == 1)
+        {
+            break;
+        }
+        task_schedule();
+        delay(1000000);
+    }
+    uart_printf("Test finished\n");
+    while(1);
 }
 
 void kernel_main()
@@ -87,10 +84,8 @@ void kernel_main()
     task_pool_init();
     core0_timer_enable();
     uart_printf("kernel init \n\r");
-    unsigned int id1 = privilege_task_create(kernel_process_1);
-    //unsigned int id2 = privilege_task_create(kernel_process_2);
-    uart_printf("start idle task\n\r");
-    task_idle();
+    privilege_task_create(user_test);
+    idle();
     return ;
 }
 

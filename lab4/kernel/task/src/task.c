@@ -37,6 +37,7 @@ static int task_get_id()
 
 int privilege_task_create(task_callback cb)
 {
+    task_preemption_disable();
     int id = task_get_id();
     if(id == TASK_INVALID_ID)
     {
@@ -52,12 +53,15 @@ int privilege_task_create(task_callback cb)
     task_pool[id].counter = TASK_COUNTER_NUM;
     task_pool[id].id = id;
     task_pool[id].resched = FALSE;
+    task_pool[id].preemption = TRUE;
     task_queue_insert(&runq, id);
+    task_preemption_enable();
     return id;
 }
 
 void task_user_exec(int id, task_callback cb)
 {
+    task_preemption_disable();
     if(id == TASK_INVALID_ID)
     {
         uart_printf("Warn: can't move invalid id to user mode\n\r");
@@ -66,6 +70,7 @@ void task_user_exec(int id, task_callback cb)
     reg->sp = USER_STACK_BASE - id * USER_STACK_SIZE;
     reg->lr = (unsigned long int)cb;
     reg->pstate = PSR_MODE_EL0t;
+    task_preemption_enable();
 }
 
 void task_context_switch(TASK* next)
@@ -118,6 +123,7 @@ void task_resched()
 
 int task_fork()
 {
+    task_preemption_disable();
     TASK *parenttask = task_get_current();
     int parentid = parenttask->id;
     int childid = task_get_id();
@@ -137,6 +143,7 @@ int task_fork()
     childtask->counter = parenttask->counter;
     childtask->id = childid;
     childtask->resched = parenttask->resched;
+    childtask->preemption = TRUE;
     task_queue_insert(&runq, childid);
     //
     PT_REGS *childreg = task_get_pt_regs(childid);
@@ -155,10 +162,32 @@ int task_fork()
         parentsp_base--;
     }
     childreg->sp = (unsigned long int)childusp;
+    task_preemption_enable();
     return childid;
 }
 
 PT_REGS *task_get_pt_regs(int id)
 {
     return (PT_REGS *)(KERNEL_STACK_BASE - id * KERNEL_STACK_SIZE - PT_REGS_SIZE);;
+}
+
+void task_exit(int status)
+{
+    task_preemption_disable();
+    TASK *cur = task_get_current();
+    cur->state = status;
+    task_queue_delete(&runq, cur->id);
+    task_preemption_enable();
+    task_schedule();
+}
+
+void task_zombie_reaper()
+{
+    for(int i = 1; i < TASK_POOL_NUM; i++)
+    {
+        if(task_pool[i].state == TASK_ZOMBIE)
+        {
+            //To Do
+        }
+    }
 }

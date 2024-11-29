@@ -59,11 +59,22 @@ static void exc_sys_call_hdr()
         }
         case SYS_CALL_FORK:
         {
-            TASK *cur = task_get_current();
-            int id = cur->id;
-            PT_REGS *reg = (PT_REGS *)(KERNEL_STACK_BASE - id * KERNEL_STACK_SIZE - PT_REGS_SIZE);
             reg->regs[0] = (unsigned long int)task_fork();
             break;
+        }
+        case SYS_CALL_EXIT:
+        {
+            task_exit(reg->regs[0]);
+            break;
+        }
+        case SYS_CALL_GET_TASK_ID:
+        {
+            reg->regs[0] = cur->id;
+            break;
+        }
+        default:
+        {
+            uart_printf("Warn: unknown syscall num:%d\n\r", reg->regs[8]);
         }
     }
 }
