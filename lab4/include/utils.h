@@ -11,7 +11,7 @@
 #define FALSE 0
 
 typedef unsigned char bool;
-
+typedef unsigned long int size_t;
 // reboot api
 void set_reg(long addr, unsigned int value);
 unsigned int read_reg(long addr);

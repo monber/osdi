@@ -156,7 +156,7 @@ char uart_getc() {
             /* convert carriage return to newline */
             while(uart_buf_is_empty(&uart_rx_buf))
             {
-                asm volatile("nop");
+                return UART_BUFFER_EMPTY;
             }
             r = uart_buf_read(&uart_rx_buf);
             break;
@@ -166,14 +166,17 @@ char uart_getc() {
     return r == '\r' ? '\n' : r;
 }
 
+/* Doesn't need those function after using syscall and uart interrupt */
+
 /**
  * Display a string
  */
+
+/*
 void uart_puts(char *s)
 {
     while(*s)
     {
-        /* convert newline to carriage return + newline */
         uart_send(*s++);
     }
 }
@@ -191,13 +194,50 @@ void uart_put_int(int x)
     itoa(x, s);
     uart_puts(s);
 }
+*/
 
-void uart_printf(char *s, ...)
+void sys_uart_printf(char *s, ...)
 {
     char dst[MAX_BUFFER_SIZE];
     __builtin_va_list args;
     __builtin_va_start(args, s);
     sprintf(dst, s, args);
-    uart_puts(dst);
+    //uart_puts(dst);
+    sys_uart_write(dst, strlen(dst));
+}
+
+size_t sys_uart_read(char buf[], size_t size)
+{
+    if(!buf)
+    {
+        return 0;
+    }
+    size_t i = 0;
+    while(i < size)
+    {
+        char c = uart_getc();
+        buf[i] = c;
+        i++;
+    }
+    return i;
+}
+
+size_t sys_uart_write(const char buf[], size_t size)
+{
+    if(!buf)
+    {
+        return 0;
+    }
+    size_t i = 0;
+    while(i < size)
+    {
+        if(buf[i] == '\0')
+        {
+            break;
+        }
+        uart_send(buf[i]);
+        i++;
+    }
+    return i;
 }
 

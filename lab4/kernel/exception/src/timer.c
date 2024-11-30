@@ -41,7 +41,7 @@ void core0_timer_enable()
   unsigned int core0_timer_irq_ctrl = read_reg(CORE0_TIMER_IRQ_CTRL);
   core0_timer_irq_ctrl |= 2;
   set_reg(CORE0_TIMER_IRQ_CTRL, core0_timer_irq_ctrl);
-  uart_printf("enable core timer\n\r");
+  sys_uart_printf("enable core timer\n\r");
 }
 
 void core0_timer_disable()

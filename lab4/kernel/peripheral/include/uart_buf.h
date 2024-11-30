@@ -4,6 +4,8 @@
 #include "string.h"
 #include "utils.h"
 
+#define UART_BUFFER_EMPTY -1
+
 typedef struct uart_buf
 {
     char buf[MAX_BUFFER_SIZE];

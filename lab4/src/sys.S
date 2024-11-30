@@ -25,3 +25,15 @@ get_task_id:
     mov     w8,     SYS_CALL_GET_TASK_ID
     svc     #0
     ret
+
+.global uart_read
+uart_read:
+    mov     w8,     SYS_CALL_UART_READ
+    svc     #0
+    ret
+
+.global uart_write
+uart_write:
+    mov     w8,     SYS_CALL_UART_WRITE
+    svc     #0
+    ret

@@ -74,16 +74,16 @@ void idle()
         task_schedule();
         delay(1000000);
     }
-    uart_printf("Test finished\n");
+    sys_uart_printf("Test finished\n");
     while(1);
 }
 
 void kernel_main()
 {
-    uart_init(MINI_UART);
+    uart_init(PL011);
     task_pool_init();
     core0_timer_enable();
-    uart_printf("kernel init \n\r");
+    sys_uart_printf("kernel init \n\r");
     privilege_task_create(user_test);
     idle();
     return ;

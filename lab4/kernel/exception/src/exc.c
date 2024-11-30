@@ -72,6 +72,20 @@ static void exc_sys_call_hdr()
             reg->regs[0] = cur->id;
             break;
         }
+        case SYS_CALL_UART_READ:
+        {
+            char *s = (char *)reg->regs[0];
+            size_t size = reg->regs[1];
+            reg->regs[0] = sys_uart_read(s, size);
+            break;
+        }
+        case SYS_CALL_UART_WRITE:
+        {
+            char *s = (char *)reg->regs[0];
+            size_t size = reg->regs[1];
+            reg->regs[0] = sys_uart_write(s, size);
+            break;
+        }
         default:
         {
             uart_printf("Warn: unknown syscall num:%d\n\r", reg->regs[8]);
@@ -98,18 +112,12 @@ void exc_print_reg_info()
     asm("mrs %0, ELR_EL1" : "=r" (elr_el1));
     asm("mrs %0, ESR_EL1" : "=r" (esr_el1.reg));
 
-    uart_puts("Return Address:");
-    uart_put_hex(elr_el1);
-    uart_puts(", EC:");
-    uart_put_hex(esr_el1.EC);
-    uart_puts(", ISS:");
-    uart_put_hex(esr_el1.ISS);
-    uart_puts("\n\r");
+    uart_printf("Return Address:0x%x, EC:0x%x, ISS:0x%x\n\r", elr_el1, esr_el1.EC, esr_el1.ISS);
 }
 
 void exc_invalid_entry()
 {
-    uart_puts("Warn: enter invalid entry\n\r");
+    uart_printf("Warn: enter invalid entry\n\r");
     exc_print_reg_info();
 }
 

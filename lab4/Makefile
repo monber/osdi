@@ -25,7 +25,7 @@ clean:
 	rm -rf kernel8.elf
 
 run:all
-	qemu-system-aarch64 -M raspi3 -kernel kernel8.img -serial null -serial stdio -initrd archive/initramfs.cpio -dtb kernel/bcm2710-rpi-3-b-plus.dtb
+	qemu-system-aarch64 -M raspi3 -kernel kernel8.img -serial stdio -initrd archive/initramfs.cpio -dtb kernel/bcm2710-rpi-3-b-plus.dtb
 
 gdb:all
-	qemu-system-aarch64 -M raspi3 -kernel kernel8.img -serial null -serial stdio -initrd archive/initramfs.cpio -dtb kernel/bcm2710-rpi-3-b-plus.dtb -s -S
+	qemu-system-aarch64 -M raspi3 -kernel kernel8.img -serial stdio -initrd archive/initramfs.cpio -dtb kernel/bcm2710-rpi-3-b-plus.dtb -s -S

@@ -9,5 +9,7 @@
 #define SYS_CALL_FORK       6
 #define SYS_CALL_EXIT       7
 #define SYS_CALL_GET_TASK_ID    8
+#define SYS_CALL_UART_READ      9
+#define SYS_CALL_UART_WRITE     10
 
 #endif

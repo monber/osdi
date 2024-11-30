@@ -4,6 +4,7 @@
 #include "timer.h"
 #include "sys.h"
 #include "task.h"
+#include "utils.h"
 
 #define ESR_ELX_SVC64 0x15
 
