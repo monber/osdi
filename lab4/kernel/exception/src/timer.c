@@ -10,21 +10,21 @@ void local_timer_enable()
   unsigned int flag = 0x30000000; // enable timer and interrupt.
   unsigned int reload = 50000000;
   set_reg(LOCAL_TIMER_CONTROL_REG, flag | reload);
-  uart_printf("enable local timer\n\r");
+  printk("enable local timer\n\r");
 }
 
 void local_timer_disable()
 {
   // disable timer and interrupt.
   set_reg(LOCAL_TIMER_CONTROL_REG, 0);
-  uart_printf("disable local timer\n\r");
+  printk("disable local timer\n\r");
 }
 
 void local_timer_handler()
 {
   set_reg(LOCAL_TIMER_IRQ_CLR, 0xc0000000); // clear interrupt and reload.
   local_timer_count++;
-  uart_printf("local timer interrupt: %d\n\r", local_timer_count);
+  printk("local timer interrupt: %d\n\r", local_timer_count);
 }
 
 void core0_timer_enable()
@@ -41,7 +41,7 @@ void core0_timer_enable()
   unsigned int core0_timer_irq_ctrl = read_reg(CORE0_TIMER_IRQ_CTRL);
   core0_timer_irq_ctrl |= 2;
   set_reg(CORE0_TIMER_IRQ_CTRL, core0_timer_irq_ctrl);
-  sys_uart_printf("enable core timer\n\r");
+  printk("enable core timer\n\r");
 }
 
 void core0_timer_disable()
@@ -55,7 +55,7 @@ void core0_timer_disable()
   unsigned int core0_timer_irq_ctrl = read_reg(CORE0_TIMER_IRQ_CTRL);
   core0_timer_irq_ctrl &= ~2;
   set_reg(CORE0_TIMER_IRQ_CTRL, core0_timer_irq_ctrl);
-  uart_printf("disable core timer\n\r");
+  printk("disable core timer\n\r");
 }
 
 void core0_timer_handler()
@@ -64,7 +64,7 @@ void core0_timer_handler()
   asm("msr cntp_tval_el0, %0" : "=r" (cntp_tval_el0));
   /*
   core_timer_count++;
-  uart_printf("core timer interrupt: %d\n\r", core_timer_count);
+  printk("core timer interrupt: %d\n\r", core_timer_count);
   */
   task_timer_tick();
 }
@@ -93,5 +93,5 @@ void timer_print_timestamp()
   float time = (float)timer_count / timer_frequency;
   char buffer[MAX_BUFFER_SIZE];
   ftoa(time, buffer);
-  uart_printf("[%s]\n\r", buffer);
+  printk("[%s]\n\r", buffer);
 }

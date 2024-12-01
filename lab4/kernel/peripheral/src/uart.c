@@ -172,7 +172,7 @@ char uart_getc() {
  * Display a string
  */
 
-/*
+
 void uart_puts(char *s)
 {
     while(*s)
@@ -180,7 +180,7 @@ void uart_puts(char *s)
         uart_send(*s++);
     }
 }
-
+/*
 void uart_put_hex(unsigned long int hex)
 {
     char s[MAX_BUFFER_SIZE];
@@ -196,7 +196,7 @@ void uart_put_int(int x)
 }
 */
 
-void sys_uart_printf(char *s, ...)
+void printk(char *s, ...)
 {
     char dst[MAX_BUFFER_SIZE];
     __builtin_va_list args;

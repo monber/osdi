@@ -5,15 +5,17 @@ TASK task_pool[TASK_POOL_NUM];
 
 void task_pool_init()
 {
-    //kernel_main
-    task_pool[0].state = TASK_RUNNING;
-    task_pool[0].priority = 0;
-    task_pool[0].id = TASK_IDLE_ID;
-    task_pool[0].counter = TASK_COUNTER_NUM;
-    task_queue_insert(&runq, TASK_IDLE_ID);
-    unsigned long int idle_task_adr = (unsigned long int)(&task_pool[0]);
-    asm volatile("msr tpidr_el1, %0" : "=r" (idle_task_adr));
-    //other
+    //init task
+    task_pool[INIT_TASK_ID].state = TASK_RUNNING;
+    task_pool[INIT_TASK_ID].priority = 0;
+    task_pool[INIT_TASK_ID].id = INIT_TASK_ID;
+    task_pool[INIT_TASK_ID].counter = TASK_COUNTER_NUM;
+    task_pool[INIT_TASK_ID].resched = FALSE;
+    task_pool[INIT_TASK_ID].preempt = TRUE;
+    task_queue_insert(&runq, INIT_TASK_ID);
+    unsigned long int init_task_adr = (unsigned long int)(&task_pool[INIT_TASK_ID]);
+    asm volatile("msr tpidr_el1, %0" : "=r" (init_task_adr));
+    //other unused task
     for(int i = 1; i < TASK_POOL_NUM; i++)
     {
         task_pool[i].state = TASK_UNUSED;
@@ -35,42 +37,62 @@ static int task_get_id()
     return id;
 }
 
-int privilege_task_create(task_callback cb)
+int task_create(unsigned int flag, void (*fn), unsigned long int arg)
 {
-    task_preemption_disable();
+    task_preempt_disable();
     int id = task_get_id();
     if(id == TASK_INVALID_ID)
     {
-        uart_printf("Warn: can't create privilege task\n\r");
+        printk("Warn: can't create privilege task\n\r");
         return TASK_INVALID_ID;
     }
-    task_pool[id].cpu_context.lr = (unsigned long int)task_ret_from_fork;
-    task_pool[id].cpu_context.fp = (unsigned long int)(KERNEL_STACK_BASE - id * KERNEL_STACK_SIZE - PT_REGS_SIZE);
-    task_pool[id].cpu_context.sp = (unsigned long int)(KERNEL_STACK_BASE - id * KERNEL_STACK_SIZE - PT_REGS_SIZE);
-    task_pool[id].kpc = (unsigned long int)cb;
-    task_pool[id].state = TASK_RUNNING;
-    task_pool[id].priority = 1;
-    task_pool[id].counter = TASK_COUNTER_NUM;
-    task_pool[id].id = id;
-    task_pool[id].resched = FALSE;
-    task_pool[id].preemption = TRUE;
+    TASK *cur = &task_pool[id];
+    //kernel/user context
+    if(flag == PF_KERNEL)
+    {
+        cur->cpu_context.x19 = (unsigned long int)fn;
+        cur->cpu_context.x20 = arg;
+    }
+    else if(flag == PF_USER)
+    {
+        cur->cpu_context.x19 = 0;
+        task_user_exec(id, fn);
+    }
+    else
+    {
+        printk("Warn: unknown task create flag:%d\n\r", flag);
+        return TASK_INVALID_ID;
+    }
+    //cpu context
+    cur->cpu_context.lr = (unsigned long int)task_ret_from_fork;
+    cur->cpu_context.fp = (unsigned long int)(KERNEL_STACK_BASE - id * KERNEL_STACK_SIZE - PT_REGS_SIZE);
+    cur->cpu_context.sp = (unsigned long int)(KERNEL_STACK_BASE - id * KERNEL_STACK_SIZE - PT_REGS_SIZE);
+    //scheduler context
+    cur->flag = flag;
+    cur->state = TASK_RUNNING;
+    cur->priority = 1;
+    cur->counter = TASK_COUNTER_NUM;
+    cur->id = id;
+    cur->resched = FALSE;
+    cur->preempt = TRUE;
     task_queue_insert(&runq, id);
-    task_preemption_enable();
+    task_preempt_enable();
     return id;
 }
 
-void task_user_exec(int id, task_callback cb)
+int task_user_exec(int id, void(*fn))
 {
-    task_preemption_disable();
     if(id == TASK_INVALID_ID)
     {
-        uart_printf("Warn: can't move invalid id to user mode\n\r");
+        printk("Warn: can't move invalid id to user mode\n\r");
+        return -1;
     }
-    PT_REGS *reg = (PT_REGS *)(KERNEL_STACK_BASE - id * KERNEL_STACK_SIZE - PT_REGS_SIZE);
+    PT_REGS *reg = task_get_pt_regs(id);
     reg->sp = USER_STACK_BASE - id * USER_STACK_SIZE;
-    reg->lr = (unsigned long int)cb;
+    reg->lr = (unsigned long int)fn;
     reg->pstate = PSR_MODE_EL0t;
-    task_preemption_enable();
+    task_pool[id].flag = PF_USER;
+    return 0;
 }
 
 void task_context_switch(TASK* next)
@@ -81,26 +103,6 @@ void task_context_switch(TASK* next)
         return;
     }
     task_switch_to(prev, next);
-}
-
-void task_set_state(TASK *cur, int state)
-{
-    cur->state = state;
-}
-
-void task_idle()
-{
-    int count = DELAY_COUNTER;
-    while(1)
-    {
-        count--;
-        if(count == 0)
-        {
-            count = DELAY_COUNTER;
-            uart_printf("in idle task\n\r");
-            task_schedule();
-        }
-    }
 }
 
 TASK *task_get_current()
@@ -121,40 +123,26 @@ void task_resched()
     }
 }
 
-int task_fork()
+int task_user_fork()
 {
-    task_preemption_disable();
-    TASK *parenttask = task_get_current();
-    int parentid = parenttask->id;
-    int childid = task_get_id();
-    if(childid == TASK_INVALID_ID)
+    task_preempt_disable();
+    TASK *parent = task_get_current();
+    int parentid = parent->id;
+    if(parent->flag != PF_USER)
     {
-        uart_printf("Warn: can't create privilege task\n\r");
+        printk("warn: task:%d is not a user task\n\r", parentid);
+        task_preempt_enable();
         return -1;
     }
-    TASK *childtask = &task_pool[childid];
-    childtask->cpu_context.lr = (unsigned long int)task_ret_from_fork;
-    childtask->cpu_context.fp = (unsigned long int)(KERNEL_STACK_BASE - childid * KERNEL_STACK_SIZE - PT_REGS_SIZE);
-    childtask->cpu_context.sp = childtask->cpu_context.fp;
-    //
-    childtask->kpc = (unsigned long int)NULL;
-    childtask->state = TASK_RUNNING;
-    childtask->priority = parenttask->priority;
-    childtask->counter = parenttask->counter;
-    childtask->id = childid;
-    childtask->resched = parenttask->resched;
-    childtask->preemption = TRUE;
-    task_queue_insert(&runq, childid);
-    //
-    PT_REGS *childreg = task_get_pt_regs(childid);
     PT_REGS *parentreg = task_get_pt_regs(parentid);
+    int childid = task_create(PF_USER, (void *)parentreg->lr, 0);
+    PT_REGS *childreg = task_get_pt_regs(childid);
     childreg->regs[0] = 0;
     childreg->regs[29] = parentreg->regs[29];
     childreg->regs[30] = parentreg->regs[30];
-    task_user_exec(childid, (task_callback)parentreg->lr);
     unsigned long int *childusp = (unsigned long int *)childreg->sp;
     unsigned long int *parentusp = (unsigned long int *)parentreg->sp;
-    unsigned long int *parentsp_base = (unsigned long int *)(USER_STACK_BASE - parentid * USER_STACK_SIZE);
+    unsigned long int *parentsp_base = (unsigned long int *)(unsigned long int)(USER_STACK_BASE - parentid * USER_STACK_SIZE);
     while(parentsp_base > parentusp)
     {
         *childusp = *parentsp_base;
@@ -162,22 +150,27 @@ int task_fork()
         parentsp_base--;
     }
     childreg->sp = (unsigned long int)childusp;
-    task_preemption_enable();
+    task_preempt_enable();
     return childid;
 }
 
 PT_REGS *task_get_pt_regs(int id)
 {
-    return (PT_REGS *)(KERNEL_STACK_BASE - id * KERNEL_STACK_SIZE - PT_REGS_SIZE);;
+    if(id == TASK_INVALID_ID)
+    {
+        printk("Warn: invalid id:%d\n\r", id);
+        return 0;
+    }
+    return (PT_REGS *)(KERNEL_STACK_BASE - id * KERNEL_STACK_SIZE - PT_REGS_SIZE);
 }
 
 void task_exit(int status)
 {
-    task_preemption_disable();
+    task_preempt_disable();
     TASK *cur = task_get_current();
     cur->state = status;
     task_queue_delete(&runq, cur->id);
-    task_preemption_enable();
+    task_preempt_enable();
     task_schedule();
 }
 
@@ -188,6 +181,7 @@ void task_zombie_reaper()
         if(task_pool[i].state == TASK_ZOMBIE)
         {
             //To Do
+            asm("nop");
         }
     }
 }

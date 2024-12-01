@@ -19,16 +19,3 @@ task_switch_to:
     mov sp,  x9
     msr tpidr_el1, x1
     ret
-
-.global task_run
-task_run:
-    ldp x19, x20, [x0, 16 * 0]
-    ldp x21, x22, [x0, 16 * 1]
-    ldp x23, x24, [x0, 16 * 2]
-    ldp x25, x26, [x0, 16 * 3]
-    ldp x27, x28, [x0, 16 * 4]
-    ldp fp, lr, [x0, 16 * 5]
-    ldr x9, [x0, 16 * 6]
-    mov sp,  x9
-    msr tpidr_el1, x0
-    ret

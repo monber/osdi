@@ -12,5 +12,6 @@ void exit(int status);
 int get_task_id();
 size_t uart_read(char buf[], size_t size);
 size_t uart_write(const char buf[], size_t size);
+void printf(char *s, ...);
 
 #endif

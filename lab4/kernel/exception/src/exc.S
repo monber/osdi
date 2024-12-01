@@ -140,10 +140,10 @@ exception_table:
 
 .globl task_ret_from_fork
 task_ret_from_fork:
-    mrs x0, tpidr_el1
-    ldp x1, x2, [x0, #8 * 12]
-    cbz x2, task_ret_to_user
-    blr x2
+    mrs x2, tpidr_el1
+    ldp x1, x0, [x2]
+    cbz x1, task_ret_to_user
+    blr x1
 
 task_ret_to_user:
     kernel_exit

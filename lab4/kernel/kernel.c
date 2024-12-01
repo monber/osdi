@@ -2,6 +2,7 @@
 #include "sched.h"
 #include "timer.h"
 #include "sys.h"
+#include "uart.h"
 
 void delay(unsigned long time)
 {
@@ -15,7 +16,7 @@ void delay(unsigned long time)
 void foo()
 {
   int tmp = 5;
-  uart_printf("Task %d after exec, tmp address 0x%x, tmp value %d\n", get_task_id(), &tmp, tmp);
+  printf("Task %d after exec, tmp address 0x%x, tmp value %d\n\r", get_task_id(), &tmp, tmp);
   exit(TASK_ZOMBIE);
 }
 
@@ -28,16 +29,16 @@ void test() {
         fork();
         while(cnt < 10)
         {
-            uart_printf("Task id: %d, cnt: %d\n", get_task_id(), cnt);
+            printf("Task id: %d, cnt: %d\n\r", get_task_id(), cnt);
             delay(1000000);
             ++cnt;
         }
         exit(TASK_ZOMBIE);
-        uart_printf("Should not be printed\n");
+        printf("Should not be printed\n");
     }
     else
     {
-        uart_printf("Task %d before exec, cnt address 0x%x, cnt value %d\n", get_task_id(), &cnt, cnt);
+        printf("Task %d before exec, cnt address 0x%x, cnt value %d\n\r", get_task_id(), &cnt, cnt);
         exec(foo);
     }
 }
@@ -50,7 +51,7 @@ void user_test()
 
 int num_runnable_tasks()
 {
-    task_preemption_disable();
+    task_preempt_disable();
     int num_runnable_tasks = 0;
     for (int i = 0; i < TASK_POOL_NUM; i++)
     {
@@ -59,7 +60,7 @@ int num_runnable_tasks()
             num_runnable_tasks++;
         }
     }
-    task_preemption_enable();
+    task_preempt_enable();
     return num_runnable_tasks;
 }
 
@@ -74,7 +75,7 @@ void idle()
         task_schedule();
         delay(1000000);
     }
-    sys_uart_printf("Test finished\n");
+    printk("Test finished\n\r");
     while(1);
 }
 
@@ -83,8 +84,8 @@ void kernel_main()
     uart_init(PL011);
     task_pool_init();
     core0_timer_enable();
-    sys_uart_printf("kernel init \n\r");
-    privilege_task_create(user_test);
+    printf("kernel init \n\r");
+    task_create(PF_KERNEL, user_test, 0);
     idle();
     return ;
 }

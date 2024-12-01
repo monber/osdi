@@ -8,7 +8,7 @@ int main()
     //uart_init(MINI_UART);
     fdt_traversal(fdt_initramfs_cb);
     
-    //uart_printf("kernel init \n\r");
+    //printf("kernel init \n\r");
     while(1)
     {
         shell_exec();

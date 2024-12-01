@@ -1,6 +1,6 @@
 #include "sys.h"
 
-void uart_printf(char *s, ...)
+void printf(char *s, ...)
 {
     char dst[MAX_BUFFER_SIZE];
     __builtin_va_list args;

@@ -19,6 +19,6 @@ void task_schedule();
 void task_timer_tick();
 void task_queue_insert(TASK_QUEUE *tq, unsigned int id);
 void task_queue_delete(TASK_QUEUE *tq, unsigned int id);
-void task_preemption_enable();
-void task_preemption_disable();
+void task_preempt_enable();
+void task_preempt_disable();
 #endif

@@ -2,7 +2,7 @@
 #define CPIO_H_
 
 #include "string.h"
-#include "uart.h"
+#include "sys.h"
 #include "utils.h"
 
 //#define CPIO_BASE_ADR 0x8000000  //for QEMU hardcode adr

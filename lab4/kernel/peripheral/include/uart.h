@@ -70,9 +70,10 @@ char uart_getc();
 void uart_puts(char *s);
 void uart_put_hex(unsigned long int hex);
 void uart_put_int(int x);
-void uart_printf(char *s, ...);
+void printk(char *s, ...);
 size_t sys_uart_read(char buf[], size_t size);
 size_t sys_uart_write(const char buf[], size_t size);
+void printk(char *s, ...);
 
 typedef enum uart_mode
 {

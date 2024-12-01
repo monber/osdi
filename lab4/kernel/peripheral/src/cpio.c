@@ -35,7 +35,7 @@ static int cpio_parse_header(CPIO_HEADER *archive, char **filename, void **data,
 {
     if(strncmp(archive->c_magic, CPIO_MAGIC_WORD, sizeof(archive->c_magic)) != 0)
     {
-        uart_printf("Warn: read abnormal cpio magic word\n\r");
+        printf("Warn: read abnormal cpio magic word\n\r");
         return -1;
     }
     *filename = (char *)archive + sizeof(CPIO_HEADER);
@@ -63,7 +63,7 @@ void cpio_ls()
         {
             break;
         }
-        uart_printf("%s\n\r", filename);
+        printf("%s\n\r", filename);
         header = next;
     }
 }

@@ -3,7 +3,7 @@
 
 #include "utils.h"
 #include "string.h"
-#include "uart.h"
+#include "sys.h"
 #include "cpio.h"
 
 #define FDT_MAGIC_WORD 0xd00dfeed

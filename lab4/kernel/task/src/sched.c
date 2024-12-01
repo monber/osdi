@@ -36,13 +36,13 @@ void task_schedule()
                 priority = cur->priority;
                 id = curid;
             }
-            if(curid != TASK_IDLE_ID)
+            if(curid != INIT_TASK_ID)
             {
                 cur->priority++;
             }
         }
         task = &task_pool[id];
-        if(id != TASK_IDLE_ID)
+        if(id != INIT_TASK_ID)
         {
             task->priority = 1;
             break;
@@ -55,7 +55,7 @@ void task_schedule()
             cur->counter = TASK_COUNTER_NUM;
         }
     }while(0);
-    //uart_printf("context switch\n\r");
+    //printk("context switch\n\r");
     task_context_switch(&task_pool[id]);
 }
 
@@ -63,24 +63,24 @@ void task_timer_tick()
 {
     TASK *cur = task_get_current();
     cur->counter--;
-    if(cur->counter > 0 || !cur->preemption)
+    if(cur->counter > 0 || !cur->preempt)
     {
         return ;
     }
-    //uart_printf("schedule\n\r");
+    //printk("schedule\n\r");
     irq_enable();
     task_schedule();
     irq_disable();
 }
 
-void task_preemption_enable()
+void task_preempt_enable()
 {
     TASK *cur = task_get_current();
-    cur->preemption = TRUE;
+    cur->preempt = TRUE;
 }
 
-void task_preemption_disable()
+void task_preempt_disable()
 {
     TASK *cur = task_get_current();
-    cur->preemption = FALSE;
+    cur->preempt = FALSE;
 }

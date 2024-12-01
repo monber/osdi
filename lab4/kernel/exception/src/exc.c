@@ -15,7 +15,7 @@ void exc_entry()
     }
     else
     {
-        uart_printf("Warn: unknown exception\n\r");
+        printk("Warn: unknown exception\n\r");
         exc_print_reg_info();
     }
 }
@@ -53,13 +53,13 @@ static void exc_sys_call_hdr()
         */
         case SYS_CALL_EXC:
         {
-            task_user_exec(cur->id, (task_callback)reg->regs[0]);
-            reg->regs[0] = 0;
+            int ret = task_user_exec(cur->id, (void *)reg->regs[0]);
+            reg->regs[0] = ret;
             break;
         }
         case SYS_CALL_FORK:
         {
-            reg->regs[0] = (unsigned long int)task_fork();
+            reg->regs[0] = (unsigned long int)task_user_fork();
             break;
         }
         case SYS_CALL_EXIT:
@@ -88,7 +88,7 @@ static void exc_sys_call_hdr()
         }
         default:
         {
-            uart_printf("Warn: unknown syscall num:%d\n\r", reg->regs[8]);
+            printk("Warn: unknown syscall num:%d\n\r", reg->regs[8]);
         }
     }
 }
@@ -101,7 +101,7 @@ void exc_svc_handler(unsigned long int ISS)
     }
     else
     {
-        uart_printf("Warn: unknown svc_num:%d\n\r", ISS);
+        printk("Warn: unknown svc_num:%d\n\r", ISS);
     }
 }
 
@@ -112,12 +112,12 @@ void exc_print_reg_info()
     asm("mrs %0, ELR_EL1" : "=r" (elr_el1));
     asm("mrs %0, ESR_EL1" : "=r" (esr_el1.reg));
 
-    uart_printf("Return Address:0x%x, EC:0x%x, ISS:0x%x\n\r", elr_el1, esr_el1.EC, esr_el1.ISS);
+    printk("Return Address:0x%x, EC:0x%x, ISS:0x%x\n\r", elr_el1, esr_el1.EC, esr_el1.ISS);
 }
 
 void exc_invalid_entry()
 {
-    uart_printf("Warn: enter invalid entry\n\r");
+    printk("Warn: enter invalid entry\n\r");
     exc_print_reg_info();
 }
 
@@ -125,5 +125,5 @@ void exc_get_currentEL()
 {
     unsigned long int currentEL;
     asm volatile("mrs %0, currentEL" : "=r" (currentEL));
-    uart_printf("currentEL:%d\n\r", ((currentEL & 0xc) >> 2));
+    printk("currentEL:%d\n\r", ((currentEL & 0xc) >> 2));
 }
